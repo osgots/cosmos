@@ -53,6 +53,8 @@ importers:
 
   packages/contracts: {}
 
+  packages/math-core: {}
+
   packages/precision: {}
 
   packages/units: {}
