@@ -1,0 +1,17 @@
+{
+  "name": "cosmos-infinity",
+  "version": "0.0.1",
+  "private": true,
+  "description": "COSMOS Infinity - interactive mathematical, physical and procedural universe engine",
+  "packageManager": "pnpm@11.22.0",
+  "engines": {
+    "node": ">=24.19.0 <25",
+    "pnpm": ">=11.22.0 <12"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @cosmos/web dev",
+    "build": "pnpm --filter @cosmos/web build",
+    "lint": "pnpm --filter @cosmos/web lint",
+    "check": "pnpm build && pnpm lint"
+  }
+}
