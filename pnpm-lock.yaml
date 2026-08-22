@@ -46,6 +46,8 @@ importers:
         specifier: ^8.2.0
         version: 8.2.2(@types/node@24.13.3)
 
+  packages/constants: {}
+
   packages/contracts: {}
 
 packages:
