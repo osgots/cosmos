@@ -53,6 +53,12 @@ importers:
 
   packages/contracts: {}
 
+  packages/geometry-4d:
+    dependencies:
+      '@cosmos/math-core':
+        specifier: workspace:*
+        version: link:../math-core
+
   packages/math-core: {}
 
   packages/precision: {}

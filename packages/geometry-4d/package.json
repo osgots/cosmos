@@ -1,0 +1,16 @@
+﻿{
+  "name": "@cosmos/geometry-4d",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@cosmos/math-core": "workspace:*"
+  }
+}
