@@ -13,5 +13,8 @@
     "build": "pnpm --filter @cosmos/web build",
     "lint": "pnpm --filter @cosmos/web lint",
     "check": "pnpm build && pnpm lint"
+  },
+  "devDependencies": {
+    "typescript": "6.0.3"
   }
 }

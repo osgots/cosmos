@@ -1,0 +1,31 @@
+# ============================================================
+# COSMOS INFINITY - GIT TEXT NORMALIZATION
+# ============================================================
+
+# Store text files as LF inside Git.
+* text=auto eol=lf
+
+# Windows command files should remain CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Binary files - never modify line endings.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.mp3 binary
+*.wav binary
+*.ogg binary
+*.mp4 binary
+*.webm binary
+*.glb binary
+*.gltf binary
+*.bin binary
+*.wasm binary
+*.woff binary
+*.woff2 binary
+*.ttf binary

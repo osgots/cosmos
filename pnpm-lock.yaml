@@ -6,10 +6,17 @@ settings:
 
 importers:
 
-  .: {}
+  .:
+    devDependencies:
+      typescript:
+        specifier: 6.0.3
+        version: 6.0.3
 
   apps/web:
     dependencies:
+      '@cosmos/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
       react:
         specifier: ^19.2.8
         version: 19.2.8
@@ -38,6 +45,8 @@ importers:
       vite:
         specifier: ^8.2.0
         version: 8.2.2(@types/node@24.13.3)
+
+  packages/contracts: {}
 
 packages:
 
