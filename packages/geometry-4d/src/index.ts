@@ -1,6 +1,7 @@
 ﻿export type {
   Tesseract,
-  TesseractEdge
+  TesseractEdge,
+  ProjectedTesseract3
 } from "./types";
 
 export {
@@ -10,3 +11,10 @@ export {
 export {
   transformTesseract
 } from "./transform";
+
+export {
+  projectVector4Orthographic,
+  projectVector4Perspective,
+  projectTesseractOrthographic,
+  projectTesseractPerspective
+} from "./projection";
