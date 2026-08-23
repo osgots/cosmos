@@ -1,5 +1,6 @@
 ﻿export type {
   RenderPosition3,
+  RenderColor3,
   RenderEdge,
   RenderLineMesh3
 } from "./types";

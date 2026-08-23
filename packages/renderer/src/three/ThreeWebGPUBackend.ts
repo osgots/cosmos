@@ -18,6 +18,10 @@ import type {
 } from "../types";
 
 import {
+  buildLineSegmentColors
+} from "./buildLineSegmentColors";
+
+import {
   buildLineSegmentPositions
 } from "./buildLineSegmentPositions";
 
@@ -25,8 +29,7 @@ import {
  * Concrete COSMOS Infinity renderer backed by the current
  * Three.js WebGPURenderer.
  *
- * Three.js is intentionally confined to this backend implementation.
- * No Three.js class escapes through the RendererBackend contract.
+ * Three.js remains confined to this implementation.
  */
 export class ThreeWebGPUBackend
 implements RendererBackend<HTMLCanvasElement> {
@@ -46,7 +49,8 @@ implements RendererBackend<HTMLCanvasElement> {
 
   private readonly material =
     new LineBasicMaterial({
-      color: 0xffffff
+      color: 0xffffff,
+      vertexColors: true
     });
 
   private readonly lines =
@@ -63,6 +67,10 @@ implements RendererBackend<HTMLCanvasElement> {
     Float32BufferAttribute | null =
       null;
 
+  private colorAttribute:
+    Float32BufferAttribute | null =
+      null;
+
   public constructor() {
     this.camera.position.set(
       0,
@@ -76,11 +84,6 @@ implements RendererBackend<HTMLCanvasElement> {
       0
     );
 
-    /**
-     * COSMOS will continuously deform projected geometry as true
-     * 4D rotations occur. We therefore avoid depending on a stale
-     * automatically computed bounding volume for this first backend.
-     */
     this.lines.frustumCulled =
       false;
 
@@ -107,13 +110,6 @@ implements RendererBackend<HTMLCanvasElement> {
         alpha: false
       });
 
-    /**
-     * WebGPU initialization is asynchronous.
-     *
-     * RendererBackend uses explicit rendering rather than requiring
-     * Three.js to own the application animation loop, so initialize
-     * the renderer here before any render() call is allowed.
-     */
     await renderer.init();
 
     this.renderer =
@@ -145,9 +141,6 @@ implements RendererBackend<HTMLCanvasElement> {
       size.pixelRatio
     );
 
-    /**
-     * CSS sizing remains the responsibility of the COSMOS web layer.
-     */
     renderer.setSize(
       size.width,
       size.height,
@@ -173,6 +166,11 @@ implements RendererBackend<HTMLCanvasElement> {
         mesh
       );
 
+    const colors =
+      buildLineSegmentColors(
+        mesh
+      );
+
     const requiredVertexCount =
       positions.length / 3;
 
@@ -182,12 +180,6 @@ implements RendererBackend<HTMLCanvasElement> {
       this.positionAttribute.count ===
         requiredVertexCount
     ) {
-      /**
-       * Reuse the existing CPU/GPU-facing buffer whenever topology
-       * size remains unchanged. A rotating tesseract has constant
-       * topology, so its normal animation path avoids allocating a
-       * brand-new attribute every frame.
-       */
       this.positionAttribute
         .array
         .set(positions);
@@ -204,6 +196,31 @@ implements RendererBackend<HTMLCanvasElement> {
       this.geometry.setAttribute(
         "position",
         this.positionAttribute
+      );
+    }
+
+    if (
+      this.colorAttribute !==
+        null &&
+      this.colorAttribute.count ===
+        requiredVertexCount
+    ) {
+      this.colorAttribute
+        .array
+        .set(colors);
+
+      this.colorAttribute
+        .needsUpdate = true;
+    } else {
+      this.colorAttribute =
+        new Float32BufferAttribute(
+          colors,
+          3
+        );
+
+      this.geometry.setAttribute(
+        "color",
+        this.colorAttribute
       );
     }
 
@@ -232,6 +249,9 @@ implements RendererBackend<HTMLCanvasElement> {
 
     this.positionAttribute =
       null;
+
+    this.colorAttribute =
+      null;
   }
 
   private requireRenderer():
@@ -247,5 +267,3 @@ implements RendererBackend<HTMLCanvasElement> {
     return this.renderer;
   }
 }
-
-

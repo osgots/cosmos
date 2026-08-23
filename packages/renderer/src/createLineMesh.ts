@@ -1,4 +1,5 @@
 ﻿import type {
+  RenderColor3,
   RenderEdge,
   RenderLineMesh3,
   RenderPosition3
@@ -27,6 +28,34 @@ function clonePosition(
     x: position.x,
     y: position.y,
     z: position.z
+  });
+}
+
+function validateColorComponent(
+  component: number
+): void {
+  if (
+    !Number.isFinite(component) ||
+    component < 0 ||
+    component > 1
+  ) {
+    throw new RangeError(
+      `Render color components must be finite values in [0, 1]. Received: ${component}`
+    );
+  }
+}
+
+function cloneColor(
+  color: RenderColor3
+): RenderColor3 {
+  validateColorComponent(color.r);
+  validateColorComponent(color.g);
+  validateColorComponent(color.b);
+
+  return Object.freeze({
+    r: color.r,
+    g: color.g,
+    b: color.b
   });
 }
 
@@ -71,12 +100,14 @@ function validateEdge(
 /**
  * Creates immutable renderer-neutral line geometry.
  *
- * Incoming arrays and objects are copied so external callers cannot mutate
- * an already-submitted render mesh after construction.
+ * Incoming arrays and objects are copied so external callers cannot
+ * mutate already-submitted render data.
  */
 export function createRenderLineMesh3(
   vertices: readonly RenderPosition3[],
-  edges: readonly RenderEdge[]
+  edges: readonly RenderEdge[],
+  vertexColors?:
+    readonly RenderColor3[]
 ): RenderLineMesh3 {
   const safeVertices =
     vertices.map(
@@ -98,6 +129,36 @@ export function createRenderLineMesh3(
       }
     );
 
+  if (
+    vertexColors === undefined
+  ) {
+    return Object.freeze({
+      vertices:
+        Object.freeze(
+          safeVertices
+        ),
+
+      edges:
+        Object.freeze(
+          safeEdges
+        )
+    });
+  }
+
+  if (
+    vertexColors.length !==
+    safeVertices.length
+  ) {
+    throw new RangeError(
+      "Render vertex color count must exactly match render vertex count."
+    );
+  }
+
+  const safeColors =
+    vertexColors.map(
+      cloneColor
+    );
+
   return Object.freeze({
     vertices:
       Object.freeze(
@@ -107,6 +168,11 @@ export function createRenderLineMesh3(
     edges:
       Object.freeze(
         safeEdges
+      ),
+
+    vertexColors:
+      Object.freeze(
+        safeColors
       )
   });
 }

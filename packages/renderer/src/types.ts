@@ -1,15 +1,28 @@
 ﻿/**
  * Renderer-facing local 3D position.
  *
- * These coordinates are deliberately plain numbers because the renderer
- * receives already-resolved local/floating-origin coordinates.
- *
  * BigInt universe coordinates must never reach the GPU directly.
  */
 export interface RenderPosition3 {
   readonly x: number;
   readonly y: number;
   readonly z: number;
+}
+
+/**
+ * Linear RGB renderer color.
+ *
+ * Each component is constrained to:
+ *
+ *   0 <= component <= 1
+ *
+ * Scientific meaning belongs to the visualization layer. The renderer
+ * merely transports these values to the GPU.
+ */
+export interface RenderColor3 {
+  readonly r: number;
+  readonly g: number;
+  readonly b: number;
 }
 
 /**
@@ -23,16 +36,15 @@ export type RenderEdge = readonly [
 /**
  * Generic renderer-neutral wire geometry.
  *
- * The renderer does not know whether this came from:
+ * vertexColors is optional. When omitted, the concrete renderer must
+ * render the geometry using its neutral/default appearance.
  *
- * - a tesseract,
- * - an orbit,
- * - a spacetime diagram,
- * - a molecular bond graph,
- * - a cosmic-web filament,
- * - or another visualization.
+ * When supplied, there must be exactly one color per vertex.
  */
 export interface RenderLineMesh3 {
   readonly vertices: readonly RenderPosition3[];
   readonly edges: readonly RenderEdge[];
+
+  readonly vertexColors?:
+    readonly RenderColor3[];
 }
