@@ -12,12 +12,9 @@ export interface RenderPosition3 {
 /**
  * Linear RGB renderer color.
  *
- * Each component is constrained to:
+ * Every component must lie in:
  *
  *   0 <= component <= 1
- *
- * Scientific meaning belongs to the visualization layer. The renderer
- * merely transports these values to the GPU.
  */
 export interface RenderColor3 {
   readonly r: number;
@@ -36,15 +33,27 @@ export type RenderEdge = readonly [
 /**
  * Generic renderer-neutral wire geometry.
  *
- * vertexColors is optional. When omitted, the concrete renderer must
- * render the geometry using its neutral/default appearance.
+ * vertexColors:
+ *   One color per logical vertex. This allows a color gradient along
+ *   an edge because each endpoint may have a different color.
  *
- * When supplied, there must be exactly one color per vertex.
+ * edgeColors:
+ *   One color per logical edge. Both endpoints of that edge use the
+ *   same color.
+ *
+ * If both are supplied, edgeColors intentionally takes precedence
+ * during line-buffer construction.
  */
 export interface RenderLineMesh3 {
-  readonly vertices: readonly RenderPosition3[];
-  readonly edges: readonly RenderEdge[];
+  readonly vertices:
+    readonly RenderPosition3[];
+
+  readonly edges:
+    readonly RenderEdge[];
 
   readonly vertexColors?:
+    readonly RenderColor3[];
+
+  readonly edgeColors?:
     readonly RenderColor3[];
 }

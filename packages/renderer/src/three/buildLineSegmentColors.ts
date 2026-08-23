@@ -44,15 +44,20 @@ function writeColor(
 }
 
 /**
- * Expands indexed per-vertex colors into the non-indexed color stream
- * required by THREE.LineSegments.
+ * Expands renderer-neutral color data into the non-indexed color stream
+ * used by THREE.LineSegments.
  *
- * Every edge contributes two RGB colors:
+ * Precedence:
  *
- *   start.r, start.g, start.b,
- *   end.r,   end.g,   end.b
+ *   1. edgeColors
+ *   2. vertexColors
+ *   3. neutral white
  *
- * Meshes without explicit colors receive neutral white.
+ * edgeColors are useful for categorical geometry such as X/Y/Z/W
+ * tesseract edge directions.
+ *
+ * vertexColors remain useful for continuous quantities such as the
+ * hidden W-coordinate gradient.
  */
 export function buildLineSegmentColors(
   mesh: RenderLineMesh3
@@ -65,11 +70,46 @@ export function buildLineSegmentColors(
   let offset = 0;
 
   for (
+    let edgeIndex = 0;
+    edgeIndex <
+    mesh.edges.length;
+    edgeIndex += 1
+  ) {
+    const edge =
+      mesh.edges[
+        edgeIndex
+      ]!;
+
     const [
       startIndex,
       endIndex
-    ] of mesh.edges
-  ) {
+    ] = edge;
+
+    const edgeColor =
+      mesh.edgeColors?.[
+        edgeIndex
+      ];
+
+    if (
+      edgeColor !== undefined
+    ) {
+      writeColor(
+        colors,
+        offset,
+        edgeColor
+      );
+
+      writeColor(
+        colors,
+        offset + 3,
+        edgeColor
+      );
+
+      offset += 6;
+
+      continue;
+    }
+
     const startColor =
       mesh.vertexColors?.[
         startIndex

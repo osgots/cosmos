@@ -97,16 +97,44 @@ function validateEdge(
   }
 }
 
+function cloneColors(
+  colors: readonly RenderColor3[],
+  expectedCount: number,
+  kind: "vertex" | "edge"
+): readonly RenderColor3[] {
+  if (
+    colors.length !==
+    expectedCount
+  ) {
+    throw new RangeError(
+      `Render ${kind} color count must exactly match render ${kind} count.`
+    );
+  }
+
+  return Object.freeze(
+    colors.map(
+      cloneColor
+    )
+  );
+}
+
 /**
  * Creates immutable renderer-neutral line geometry.
  *
- * Incoming arrays and objects are copied so external callers cannot
- * mutate already-submitted render data.
+ * Arrays and objects are copied so callers cannot mutate data that has
+ * already crossed the renderer boundary.
  */
 export function createRenderLineMesh3(
-  vertices: readonly RenderPosition3[],
-  edges: readonly RenderEdge[],
+  vertices:
+    readonly RenderPosition3[],
+
+  edges:
+    readonly RenderEdge[],
+
   vertexColors?:
+    readonly RenderColor3[],
+
+  edgeColors?:
     readonly RenderColor3[]
 ): RenderLineMesh3 {
   const safeVertices =
@@ -129,50 +157,57 @@ export function createRenderLineMesh3(
       }
     );
 
-  if (
+  const frozenVertices =
+    Object.freeze(
+      safeVertices
+    );
+
+  const frozenEdges =
+    Object.freeze(
+      safeEdges
+    );
+
+  const safeVertexColors =
     vertexColors === undefined
-  ) {
-    return Object.freeze({
-      vertices:
-        Object.freeze(
-          safeVertices
-        ),
+      ? undefined
+      : cloneColors(
+          vertexColors,
+          safeVertices.length,
+          "vertex"
+        );
 
-      edges:
-        Object.freeze(
-          safeEdges
-        )
-    });
-  }
-
-  if (
-    vertexColors.length !==
-    safeVertices.length
-  ) {
-    throw new RangeError(
-      "Render vertex color count must exactly match render vertex count."
-    );
-  }
-
-  const safeColors =
-    vertexColors.map(
-      cloneColor
-    );
+  const safeEdgeColors =
+    edgeColors === undefined
+      ? undefined
+      : cloneColors(
+          edgeColors,
+          safeEdges.length,
+          "edge"
+        );
 
   return Object.freeze({
     vertices:
-      Object.freeze(
-        safeVertices
-      ),
+      frozenVertices,
 
     edges:
-      Object.freeze(
-        safeEdges
-      ),
+      frozenEdges,
 
-    vertexColors:
-      Object.freeze(
-        safeColors
-      )
+    ...(
+      safeVertexColors === undefined
+        ? {}
+        : {
+            vertexColors:
+              safeVertexColors
+          }
+    ),
+
+    ...(
+      safeEdgeColors === undefined
+        ? {}
+        : {
+            edgeColors:
+              safeEdgeColors
+          }
+    )
   });
 }
