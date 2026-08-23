@@ -19,8 +19,8 @@ import {
 } from "@cosmos/geometry-4d";
 
 import {
-  createProjectedTesseractRenderMesh,
-  createTesseractSliceRenderMesh
+  createTesseractSliceRenderMesh,
+  createWEncodedProjectedTesseractRenderMesh
 } from "@cosmos/visualization";
 
 import {
@@ -147,10 +147,8 @@ function degrees(
 }
 
 function combineRotations(
-  manual:
-    RotationAngles,
-  automatic:
-    RotationAngles
+  manual: RotationAngles,
+  automatic: RotationAngles
 ) {
   const xy =
     rotationMatrix4(
@@ -398,10 +396,8 @@ function App() {
       renderStatsRef.current;
 
     if (
-      previous.vertices ===
-        vertices &&
-      previous.edges ===
-        edges
+      previous.vertices === vertices &&
+      previous.edges === edges
     ) {
       return;
     }
@@ -554,12 +550,6 @@ function App() {
             };
           }
 
-          /**
-           * The object is always transformed in true R^4 first.
-           *
-           * View mode is applied only after the four-dimensional
-           * orientation has been computed.
-           */
           const rotation =
             combineRotations(
               manualAnglesRef.current,
@@ -583,7 +573,8 @@ function App() {
                 );
 
               const renderMesh =
-                createProjectedTesseractRenderMesh(
+                createWEncodedProjectedTesseractRenderMesh(
+                  rotated,
                   projected
                 );
 
@@ -606,7 +597,8 @@ function App() {
                 );
 
               const renderMesh =
-                createProjectedTesseractRenderMesh(
+                createWEncodedProjectedTesseractRenderMesh(
+                  rotated,
                   projected
                 );
 
@@ -623,13 +615,6 @@ function App() {
             }
 
             case "SLICE": {
-              /**
-               * This is not a projection.
-               *
-               * It computes the actual intersection:
-               *
-               *   Tesseract ∩ { w = sliceW }
-               */
               const slice =
                 sliceTesseractAtW(
                   rotated,
@@ -742,9 +727,9 @@ function App() {
 
         <div>
           <span>VIEW</span>
+
           <strong>
-            {viewMode ===
-            "SLICE"
+            {viewMode === "SLICE"
               ? "TRUE SLICE"
               : viewMode}
           </strong>
@@ -752,13 +737,12 @@ function App() {
 
         <div>
           <span>SOURCE</span>
-          <strong>
-            16 V / 32 E
-          </strong>
+          <strong>16 V / 32 E</strong>
         </div>
 
         <div>
           <span>DISPLAY</span>
+
           <strong>
             {renderStats.vertices}
             {" V / "}
@@ -771,6 +755,7 @@ function App() {
           "SLICE" && (
           <div>
             <span>SLICE W</span>
+
             <strong>
               {sliceW.toFixed(2)}
             </strong>
@@ -789,6 +774,43 @@ function App() {
           </strong>
         </div>
       </aside>
+
+      {viewMode !==
+        "SLICE" && (
+        <aside
+          className="cosmos-w-legend"
+          aria-label="Fourth spatial coordinate color legend"
+        >
+          <div className="cosmos-w-legend-header">
+            <span>
+              W AXIS
+            </span>
+
+            <strong>
+              VISUAL ENCODING
+            </strong>
+          </div>
+
+          <div
+            className="cosmos-w-gradient"
+            aria-hidden="true"
+          />
+
+          <div className="cosmos-w-labels">
+            <span>−W</span>
+            <span>0</span>
+            <span>+W</span>
+          </div>
+
+          <p>
+            Color encodes fourth-dimensional position after rotation.
+          </p>
+
+          <small>
+            ARTISTIC VISUALIZATION
+          </small>
+        </aside>
+      )}
 
       <section
         className="cosmos-controls"
@@ -985,8 +1007,7 @@ function App() {
                 </span>
 
                 <output>
-                  {sliceW
-                    .toFixed(2)}
+                  {sliceW.toFixed(2)}
                 </output>
               </div>
 
@@ -1044,7 +1065,7 @@ function App() {
             </span>
 
             <strong>
-              W changes the apparent scale of the projected 3D geometry.
+              W position is encoded visually while the object is projected into 3D.
             </strong>
           </>
         )}
@@ -1057,7 +1078,7 @@ function App() {
             </span>
 
             <strong>
-              Rotate in R⁴ first, then discard W without perspective.
+              Color reveals hidden W position even after W is discarded geometrically.
             </strong>
           </>
         )}
