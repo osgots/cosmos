@@ -11,6 +11,10 @@
   },
   "dependencies": {
     "@cosmos/contracts": "workspace:*",
+    "@cosmos/geometry-4d": "workspace:*",
+    "@cosmos/math-core": "workspace:*",
+    "@cosmos/renderer": "workspace:*",
+    "@cosmos/visualization": "workspace:*",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },

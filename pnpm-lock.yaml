@@ -20,6 +20,18 @@ importers:
       '@cosmos/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@cosmos/geometry-4d':
+        specifier: workspace:*
+        version: link:../../packages/geometry-4d
+      '@cosmos/math-core':
+        specifier: workspace:*
+        version: link:../../packages/math-core
+      '@cosmos/renderer':
+        specifier: workspace:*
+        version: link:../../packages/renderer
+      '@cosmos/visualization':
+        specifier: workspace:*
+        version: link:../../packages/visualization
       react:
         specifier: ^19.2.8
         version: 19.2.8
