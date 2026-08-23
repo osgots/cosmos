@@ -75,6 +75,19 @@ importers:
 
   packages/units: {}
 
+  packages/visualization:
+    dependencies:
+      '@cosmos/geometry-4d':
+        specifier: workspace:*
+        version: link:../geometry-4d
+      '@cosmos/renderer':
+        specifier: workspace:*
+        version: link:../renderer
+    devDependencies:
+      '@cosmos/math-core':
+        specifier: workspace:*
+        version: link:../math-core
+
 packages:
 
   '@dimforge/rapier3d-compat@0.12.0':

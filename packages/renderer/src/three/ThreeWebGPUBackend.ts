@@ -29,7 +29,7 @@ import {
  * No Three.js class escapes through the RendererBackend contract.
  */
 export class ThreeWebGPUBackend
-implements RendererBackend {
+implements RendererBackend<HTMLCanvasElement> {
   private readonly scene =
     new Scene();
 
@@ -247,3 +247,5 @@ implements RendererBackend {
     return this.renderer;
   }
 }
+
+

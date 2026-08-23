@@ -11,17 +11,14 @@ export interface RendererSize {
 /**
  * Stable renderer boundary used by COSMOS Infinity.
  *
- * A concrete implementation may later use:
- *
- * - Three.js WebGPURenderer
- * - WebGL fallback
- * - another GPU backend
- *
- * Higher-level COSMOS systems interact only with this interface.
+ * Surface is deliberately generic so the renderer-neutral package does
+ * not depend on browser-specific types such as HTMLCanvasElement.
  */
-export interface RendererBackend {
+export interface RendererBackend<
+  Surface = unknown
+> {
   initialize(
-    canvas: HTMLCanvasElement
+    surface: Surface
   ): Promise<void>;
 
   resize(

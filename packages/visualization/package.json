@@ -1,0 +1,20 @@
+{
+  "name": "@cosmos/visualization",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@cosmos/geometry-4d": "workspace:*",
+    "@cosmos/renderer": "workspace:*"
+  },
+  "devDependencies": {
+    "@cosmos/math-core": "workspace:*"
+  }
+}
