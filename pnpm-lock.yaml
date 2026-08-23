@@ -63,6 +63,8 @@ importers:
 
   packages/precision: {}
 
+  packages/renderer: {}
+
   packages/units: {}
 
 packages:
