@@ -18,10 +18,8 @@ button {
 
 .cosmos-shell {
   position: relative;
-
   width: 100%;
   height: 100vh;
-
   overflow: hidden;
 
   background:
@@ -32,8 +30,7 @@ button {
       rgb(0 0 0) 100%
     );
 
-  color:
-    rgb(238 249 255);
+  color: rgb(238 249 255);
 }
 
 .cosmos-shell::before {
@@ -41,7 +38,6 @@ button {
 
   position: absolute;
   inset: 0;
-
   z-index: 1;
 
   pointer-events: none;
@@ -57,8 +53,7 @@ button {
       transparent 1px
     );
 
-  background-size:
-    64px 64px;
+  background-size: 64px 64px;
 
   mask-image:
     radial-gradient(
@@ -70,7 +65,6 @@ button {
 
 .cosmos-viewport {
   position: absolute;
-
   inset: 0;
 
   display: block;
@@ -94,7 +88,6 @@ button {
 
 .cosmos-brand {
   display: flex;
-
   align-items: flex-start;
 
   gap: 3px;
@@ -151,8 +144,7 @@ button {
 
   margin-top: 18px;
 
-  padding:
-    7px 10px;
+  padding: 7px 10px;
 
   border:
     1px solid
@@ -183,8 +175,7 @@ button {
 
   border-radius: 50%;
 
-  background:
-    currentColor;
+  background: currentColor;
 
   box-shadow:
     0 0 12px
@@ -213,7 +204,7 @@ button {
 
   width:
     min(
-      250px,
+      260px,
       calc(100vw - 72px)
     );
 
@@ -245,8 +236,7 @@ button {
 
   gap: 18px;
 
-  padding:
-    7px 0;
+  padding: 7px 0;
 }
 
 .cosmos-readout span {
@@ -287,7 +277,7 @@ button {
 
   z-index: 20;
 
-  width: 310px;
+  width: 330px;
 
   max-height:
     calc(100vh - 245px);
@@ -317,8 +307,7 @@ button {
   justify-content:
     space-between;
 
-  align-items:
-    center;
+  align-items: center;
 
   gap: 16px;
 
@@ -362,8 +351,7 @@ button {
 .cosmos-toggle {
   min-width: 58px;
 
-  padding:
-    7px 10px;
+  padding: 7px 10px;
 
   border:
     1px solid
@@ -428,7 +416,6 @@ button {
 
 .cosmos-slider {
   display: block;
-
   min-width: 0;
 }
 
@@ -478,7 +465,6 @@ button {
   display: block;
 
   width: 100%;
-
   height: 18px;
 
   margin: 0;
@@ -492,22 +478,130 @@ button {
 .cosmos-control-divider {
   height: 1px;
 
-  margin:
-    16px 0;
+  margin: 16px 0;
 
   background:
     rgb(255 255 255 / 0.08);
 }
 
-.cosmos-projection-control {
+.cosmos-view-section {
   margin-bottom: 15px;
+}
+
+.cosmos-mode-switch {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    );
+
+  gap: 6px;
+
+  padding: 4px;
+
+  border:
+    1px solid
+    rgb(255 255 255 / 0.08);
+
+  border-radius: 11px;
+
+  background:
+    rgb(0 0 0 / 0.18);
+}
+
+.cosmos-mode-button {
+  min-width: 0;
+
+  padding:
+    8px 4px;
+
+  border:
+    1px solid
+    transparent;
+
+  border-radius: 7px;
+
+  background:
+    transparent;
+
+  cursor: pointer;
+
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+
+  font-size: 0.48rem;
+
+  letter-spacing: 0.07em;
+
+  opacity: 0.4;
+
+  transition:
+    opacity 150ms ease,
+    background 150ms ease,
+    border-color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.cosmos-mode-button:hover {
+  opacity: 0.85;
+}
+
+.cosmos-mode-button.is-active {
+  opacity: 1;
+
+  background:
+    rgb(255 255 255 / 0.07);
+
+  border-color:
+    rgb(255 255 255 / 0.15);
+
+  box-shadow:
+    0 0 14px
+    rgb(255 255 255 / 0.035);
+}
+
+.cosmos-view-control {
+  margin-top: 14px;
+}
+
+.cosmos-view-description {
+  margin:
+    13px 0 2px;
+
+  padding:
+    10px 11px;
+
+  border-left:
+    1px solid
+    rgb(255 255 255 / 0.16);
+
+  background:
+    rgb(255 255 255 / 0.018);
+
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+
+  font-size: 0.51rem;
+
+  line-height: 1.55;
+
+  letter-spacing: 0.035em;
+
+  opacity: 0.44;
 }
 
 .cosmos-reset {
   width: 100%;
 
-  padding:
-    9px 12px;
+  padding: 9px 12px;
 
   border:
     1px solid
@@ -589,7 +683,7 @@ button {
   width:
     min(
       720px,
-      calc(100vw - 720px)
+      calc(100vw - 760px)
     );
 
   text-align: center;
@@ -629,6 +723,15 @@ button {
   letter-spacing: 0.02em;
 }
 
+button:focus-visible,
+input:focus-visible {
+  outline:
+    1px solid
+    rgb(225 248 255 / 0.7);
+
+  outline-offset: 3px;
+}
+
 @media (
   max-width: 900px
 ) {
@@ -640,7 +743,7 @@ button {
     width:
       min(
         500px,
-        calc(100vw - 380px)
+        calc(100vw - 400px)
       );
   }
 }
@@ -664,7 +767,7 @@ button {
 
     width: auto;
 
-    max-height: 42vh;
+    max-height: 45vh;
 
     padding: 14px;
   }

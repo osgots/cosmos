@@ -12,12 +12,15 @@ import {
 
 import {
   createTesseract,
+  projectTesseractOrthographic,
   projectTesseractPerspective,
+  sliceTesseractAtW,
   transformTesseract
 } from "@cosmos/geometry-4d";
 
 import {
-  createProjectedTesseractRenderMesh
+  createProjectedTesseractRenderMesh,
+  createTesseractSliceRenderMesh
 } from "@cosmos/visualization";
 
 import {
@@ -34,6 +37,11 @@ type ViewportStatus =
   | "LIVE"
   | "ERROR";
 
+type ViewMode =
+  | "PERSPECTIVE"
+  | "ORTHOGRAPHIC"
+  | "SLICE";
+
 interface RotationAngles {
   readonly XY: number;
   readonly XZ: number;
@@ -41,6 +49,11 @@ interface RotationAngles {
   readonly YZ: number;
   readonly YW: number;
   readonly ZW: number;
+}
+
+interface RenderStats {
+  readonly vertices: number;
+  readonly edges: number;
 }
 
 type RotationKey =
@@ -101,6 +114,25 @@ const ROTATION_CONTROLS:
       key: "ZW",
       label: "ZW",
       fourthDimensional: true
+    }
+  ];
+
+const VIEW_MODES:
+  readonly {
+    readonly mode: ViewMode;
+    readonly label: string;
+  }[] = [
+    {
+      mode: "PERSPECTIVE",
+      label: "PERSPECTIVE"
+    },
+    {
+      mode: "ORTHOGRAPHIC",
+      label: "ORTHO"
+    },
+    {
+      mode: "SLICE",
+      label: "TRUE SLICE"
     }
   ];
 
@@ -230,6 +262,43 @@ function App() {
   const projectionDistanceRef =
     useRef(4.5);
 
+  const [
+    viewMode,
+    setViewMode
+  ] =
+    useState<ViewMode>(
+      "PERSPECTIVE"
+    );
+
+  const viewModeRef =
+    useRef<ViewMode>(
+      "PERSPECTIVE"
+    );
+
+  const [
+    sliceW,
+    setSliceW
+  ] =
+    useState(0);
+
+  const sliceWRef =
+    useRef(0);
+
+  const [
+    renderStats,
+    setRenderStats
+  ] =
+    useState<RenderStats>({
+      vertices: 16,
+      edges: 32
+    });
+
+  const renderStatsRef =
+    useRef<RenderStats>({
+      vertices: 16,
+      edges: 32
+    });
+
   function updateManualAngle(
     plane: RotationKey,
     value: number
@@ -278,6 +347,28 @@ function App() {
     );
   }
 
+  function updateSliceW(
+    value: number
+  ): void {
+    if (!Number.isFinite(value)) {
+      return;
+    }
+
+    sliceWRef.current =
+      value;
+
+    setSliceW(value);
+  }
+
+  function selectViewMode(
+    mode: ViewMode
+  ): void {
+    viewModeRef.current =
+      mode;
+
+    setViewMode(mode);
+  }
+
   function resetOrientation():
     void {
     const zeroManual = {
@@ -297,6 +388,33 @@ function App() {
     setManualAngles(
       zeroManual
     );
+  }
+
+  function updateRenderStats(
+    vertices: number,
+    edges: number
+  ): void {
+    const previous =
+      renderStatsRef.current;
+
+    if (
+      previous.vertices ===
+        vertices &&
+      previous.edges ===
+        edges
+    ) {
+      return;
+    }
+
+    const next = {
+      vertices,
+      edges
+    };
+
+    renderStatsRef.current =
+      next;
+
+    setRenderStats(next);
   }
 
   useEffect(() => {
@@ -437,10 +555,10 @@ function App() {
           }
 
           /**
-           * The complete orientation is calculated in R^4.
+           * The object is always transformed in true R^4 first.
            *
-           * Manual slider angles and accumulated automatic angles
-           * are combined before projection.
+           * View mode is applied only after the four-dimensional
+           * orientation has been computed.
            */
           const rotation =
             combineRotations(
@@ -454,20 +572,87 @@ function App() {
               rotation
             );
 
-          const projected =
-            projectTesseractPerspective(
-              rotated,
-              projectionDistanceRef.current
-            );
+          switch (
+            viewModeRef.current
+          ) {
+            case "PERSPECTIVE": {
+              const projected =
+                projectTesseractPerspective(
+                  rotated,
+                  projectionDistanceRef.current
+                );
 
-          const renderMesh =
-            createProjectedTesseractRenderMesh(
-              projected
-            );
+              const renderMesh =
+                createProjectedTesseractRenderMesh(
+                  projected
+                );
 
-          backend.renderLineMesh(
-            renderMesh
-          );
+              updateRenderStats(
+                renderMesh.vertices.length,
+                renderMesh.edges.length
+              );
+
+              backend.renderLineMesh(
+                renderMesh
+              );
+
+              break;
+            }
+
+            case "ORTHOGRAPHIC": {
+              const projected =
+                projectTesseractOrthographic(
+                  rotated
+                );
+
+              const renderMesh =
+                createProjectedTesseractRenderMesh(
+                  projected
+                );
+
+              updateRenderStats(
+                renderMesh.vertices.length,
+                renderMesh.edges.length
+              );
+
+              backend.renderLineMesh(
+                renderMesh
+              );
+
+              break;
+            }
+
+            case "SLICE": {
+              /**
+               * This is not a projection.
+               *
+               * It computes the actual intersection:
+               *
+               *   Tesseract ∩ { w = sliceW }
+               */
+              const slice =
+                sliceTesseractAtW(
+                  rotated,
+                  sliceWRef.current
+                );
+
+              const renderMesh =
+                createTesseractSliceRenderMesh(
+                  slice
+                );
+
+              updateRenderStats(
+                renderMesh.vertices.length,
+                renderMesh.edges.length
+              );
+
+              backend.renderLineMesh(
+                renderMesh
+              );
+
+              break;
+            }
+          }
 
           animationFrame =
             requestAnimationFrame(
@@ -518,7 +703,7 @@ function App() {
       <canvas
         ref={canvasRef}
         className="cosmos-viewport"
-        aria-label="Interactive four-dimensional tesseract projection"
+        aria-label="Interactive four-dimensional tesseract visualization"
       />
 
       <section className="cosmos-hud">
@@ -556,19 +741,41 @@ function App() {
         </div>
 
         <div>
-          <span>VERTICES</span>
-          <strong>16</strong>
+          <span>VIEW</span>
+          <strong>
+            {viewMode ===
+            "SLICE"
+              ? "TRUE SLICE"
+              : viewMode}
+          </strong>
         </div>
 
         <div>
-          <span>EDGES</span>
-          <strong>32</strong>
+          <span>SOURCE</span>
+          <strong>
+            16 V / 32 E
+          </strong>
         </div>
 
         <div>
-          <span>PROJECTION</span>
-          <strong>4D → 3D</strong>
+          <span>DISPLAY</span>
+          <strong>
+            {renderStats.vertices}
+            {" V / "}
+            {renderStats.edges}
+            {" E"}
+          </strong>
         </div>
+
+        {viewMode ===
+          "SLICE" && (
+          <div>
+            <span>SLICE W</span>
+            <strong>
+              {sliceW.toFixed(2)}
+            </strong>
+          </div>
+        )}
 
         <div>
           <span>
@@ -585,7 +792,7 @@ function App() {
 
       <section
         className="cosmos-controls"
-        aria-label="Four-dimensional rotation controls"
+        aria-label="Four-dimensional controls"
       >
         <header className="cosmos-controls-header">
           <div>
@@ -682,39 +889,136 @@ function App() {
 
         <div className="cosmos-control-divider" />
 
-        <label className="cosmos-slider cosmos-projection-control">
+        <div className="cosmos-view-section">
           <div className="cosmos-slider-heading">
             <span>
-              4D VIEW DISTANCE
+              VIEW MODE
             </span>
-
-            <output>
-              {projectionDistance
-                .toFixed(2)}
-            </output>
           </div>
 
-          <input
-            type="range"
-            min="2.25"
-            max="12"
-            step="0.05"
-            value={
-              projectionDistance
-            }
-            onChange={
-              (event) =>
-                updateProjectionDistance(
-                  Number(
-                    event
-                      .currentTarget
-                      .value
+          <div
+            className="cosmos-mode-switch"
+            role="group"
+            aria-label="Four-dimensional viewing mode"
+          >
+            {VIEW_MODES.map(
+              ({
+                mode,
+                label
+              }) => (
+                <button
+                  key={mode}
+                  type="button"
+                  className={
+                    viewMode === mode
+                      ? "cosmos-mode-button is-active"
+                      : "cosmos-mode-button"
+                  }
+                  onClick={
+                    () =>
+                      selectViewMode(
+                        mode
+                      )
+                  }
+                  aria-pressed={
+                    viewMode === mode
+                  }
+                >
+                  {label}
+                </button>
+              )
+            )}
+          </div>
+        </div>
+
+        {viewMode ===
+          "PERSPECTIVE" && (
+          <label className="cosmos-slider cosmos-view-control">
+            <div className="cosmos-slider-heading">
+              <span>
+                4D VIEW DISTANCE
+              </span>
+
+              <output>
+                {projectionDistance
+                  .toFixed(2)}
+              </output>
+            </div>
+
+            <input
+              type="range"
+              min="2.25"
+              max="12"
+              step="0.05"
+              value={
+                projectionDistance
+              }
+              onChange={
+                (event) =>
+                  updateProjectionDistance(
+                    Number(
+                      event
+                        .currentTarget
+                        .value
+                    )
                   )
-                )
-            }
-            aria-label="Four-dimensional perspective projection distance"
-          />
-        </label>
+              }
+              aria-label="Four-dimensional perspective projection distance"
+            />
+          </label>
+        )}
+
+        {viewMode ===
+          "ORTHOGRAPHIC" && (
+          <p className="cosmos-view-description">
+            W is removed only after the true R⁴ rotation. No fourth-dimensional perspective scaling is applied.
+          </p>
+        )}
+
+        {viewMode ===
+          "SLICE" && (
+          <>
+            <label className="cosmos-slider cosmos-view-control">
+              <div className="cosmos-slider-heading">
+                <span>
+                  SLICE W
+                </span>
+
+                <output>
+                  {sliceW
+                    .toFixed(2)}
+                </output>
+              </div>
+
+              <input
+                type="range"
+                min="-2.2"
+                max="2.2"
+                step="0.01"
+                value={
+                  sliceW
+                }
+                onChange={
+                  (event) =>
+                    updateSliceW(
+                      Number(
+                        event
+                          .currentTarget
+                          .value
+                      )
+                    )
+                }
+                aria-label="Four-dimensional W slice position"
+              />
+            </label>
+
+            <p className="cosmos-view-description">
+              Actual intersection of the rotated tesseract with the 3D hyperplane w = {sliceW.toFixed(2)}.
+            </p>
+          </>
+        )}
+
+        <div className="cosmos-control-divider" />
 
         <button
           type="button"
@@ -732,13 +1036,44 @@ function App() {
       </section>
 
       <div className="cosmos-caption">
-        <span>
-          TRUE FOUR-DIMENSIONAL TRANSFORMATION
-        </span>
+        {viewMode ===
+          "PERSPECTIVE" && (
+          <>
+            <span>
+              FOUR-DIMENSIONAL PERSPECTIVE
+            </span>
 
-        <strong>
-          Rotate through W and watch the 3D projection deform.
-        </strong>
+            <strong>
+              W changes the apparent scale of the projected 3D geometry.
+            </strong>
+          </>
+        )}
+
+        {viewMode ===
+          "ORTHOGRAPHIC" && (
+          <>
+            <span>
+              ORTHOGRAPHIC 4D → 3D
+            </span>
+
+            <strong>
+              Rotate in R⁴ first, then discard W without perspective.
+            </strong>
+          </>
+        )}
+
+        {viewMode ===
+          "SLICE" && (
+          <>
+            <span>
+              TRUE 3D CROSS-SECTION
+            </span>
+
+            <strong>
+              This geometry actually intersects the hyperplane w = {sliceW.toFixed(2)}.
+            </strong>
+          </>
+        )}
       </div>
     </main>
   );
