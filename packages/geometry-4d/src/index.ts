@@ -1,7 +1,10 @@
 ﻿export type {
   Tesseract,
   TesseractEdge,
-  ProjectedTesseract3
+  TesseractFace,
+  ProjectedTesseract3,
+  TesseractSlice3,
+  TesseractSliceEdge3
 } from "./types";
 
 export {
@@ -18,3 +21,11 @@ export {
   projectTesseractOrthographic,
   projectTesseractPerspective
 } from "./projection";
+
+export {
+  TESSERACT_FACES
+} from "./topology";
+
+export {
+  sliceTesseractAtW
+} from "./slice";
