@@ -7,6 +7,15 @@
   box-sizing: border-box;
 }
 
+button,
+input {
+  font: inherit;
+}
+
+button {
+  color: inherit;
+}
+
 .cosmos-shell {
   position: relative;
 
@@ -17,13 +26,14 @@
 
   background:
     radial-gradient(
-      circle at center,
-      rgb(9 18 32) 0%,
+      circle at 50% 48%,
+      rgb(10 20 35) 0%,
       rgb(3 8 16) 42%,
       rgb(0 0 0) 100%
     );
 
-  color: rgb(238 249 255);
+  color:
+    rgb(238 249 255);
 }
 
 .cosmos-shell::before {
@@ -31,6 +41,8 @@
 
   position: absolute;
   inset: 0;
+
+  z-index: 1;
 
   pointer-events: none;
 
@@ -52,7 +64,7 @@
     radial-gradient(
       circle at center,
       black,
-      transparent 72%
+      transparent 74%
     );
 }
 
@@ -140,8 +152,7 @@
   margin-top: 18px;
 
   padding:
-    7px
-    10px;
+    7px 10px;
 
   border:
     1px solid
@@ -176,7 +187,8 @@
     currentColor;
 
   box-shadow:
-    0 0 12px currentColor;
+    0 0 12px
+    currentColor;
 }
 
 .cosmos-status[data-status="INITIALIZING"] {
@@ -267,6 +279,294 @@
   text-align: right;
 }
 
+.cosmos-controls {
+  position: absolute;
+
+  left: 36px;
+  bottom: 32px;
+
+  z-index: 20;
+
+  width: 310px;
+
+  max-height:
+    calc(100vh - 245px);
+
+  overflow-y: auto;
+
+  padding: 18px;
+
+  border:
+    1px solid
+    rgb(255 255 255 / 0.1);
+
+  border-radius: 18px;
+
+  background:
+    rgb(2 8 16 / 0.48);
+
+  backdrop-filter:
+    blur(22px);
+
+  scrollbar-width: thin;
+}
+
+.cosmos-controls-header {
+  display: flex;
+
+  justify-content:
+    space-between;
+
+  align-items:
+    center;
+
+  gap: 16px;
+
+  margin-bottom: 16px;
+}
+
+.cosmos-panel-kicker {
+  display: block;
+
+  margin-bottom: 5px;
+
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+
+  font-size: 0.52rem;
+
+  letter-spacing: 0.18em;
+
+  opacity: 0.42;
+}
+
+.cosmos-controls h2 {
+  margin: 0;
+
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+
+  font-size: 0.82rem;
+
+  font-weight: 500;
+
+  letter-spacing: 0.14em;
+}
+
+.cosmos-toggle {
+  min-width: 58px;
+
+  padding:
+    7px 10px;
+
+  border:
+    1px solid
+    rgb(255 255 255 / 0.12);
+
+  border-radius: 999px;
+
+  background:
+    rgb(255 255 255 / 0.03);
+
+  cursor: pointer;
+
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+
+  font-size: 0.56rem;
+
+  letter-spacing: 0.12em;
+
+  opacity: 0.55;
+
+  transition:
+    opacity 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.cosmos-toggle:hover {
+  opacity: 1;
+}
+
+.cosmos-toggle.is-active {
+  opacity: 1;
+
+  border-color:
+    rgb(255 255 255 / 0.32);
+
+  background:
+    rgb(255 255 255 / 0.08);
+
+  box-shadow:
+    0 0 18px
+    rgb(255 255 255 / 0.06);
+}
+
+.cosmos-rotation-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+
+  gap:
+    12px 14px;
+}
+
+.cosmos-slider {
+  display: block;
+
+  min-width: 0;
+}
+
+.cosmos-slider-heading {
+  display: flex;
+
+  justify-content:
+    space-between;
+
+  align-items:
+    center;
+
+  gap: 8px;
+
+  margin-bottom: 6px;
+
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+
+  font-size: 0.58rem;
+
+  letter-spacing: 0.1em;
+}
+
+.cosmos-slider-heading span {
+  opacity: 0.6;
+}
+
+.cosmos-slider-heading output {
+  font-size: 0.55rem;
+
+  opacity: 0.42;
+}
+
+.cosmos-slider.is-fourth-dimensional
+  .cosmos-slider-heading
+  span {
+  opacity: 1;
+
+  font-weight: 700;
+}
+
+.cosmos-slider input[type="range"] {
+  display: block;
+
+  width: 100%;
+
+  height: 18px;
+
+  margin: 0;
+
+  cursor: pointer;
+
+  accent-color:
+    rgb(232 248 255);
+}
+
+.cosmos-control-divider {
+  height: 1px;
+
+  margin:
+    16px 0;
+
+  background:
+    rgb(255 255 255 / 0.08);
+}
+
+.cosmos-projection-control {
+  margin-bottom: 15px;
+}
+
+.cosmos-reset {
+  width: 100%;
+
+  padding:
+    9px 12px;
+
+  border:
+    1px solid
+    rgb(255 255 255 / 0.1);
+
+  border-radius: 10px;
+
+  background:
+    rgb(255 255 255 / 0.025);
+
+  cursor: pointer;
+
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+
+  font-size: 0.55rem;
+
+  letter-spacing: 0.13em;
+
+  opacity: 0.62;
+
+  transition:
+    opacity 150ms ease,
+    background 150ms ease,
+    border-color 150ms ease;
+}
+
+.cosmos-reset:hover {
+  opacity: 1;
+
+  background:
+    rgb(255 255 255 / 0.07);
+
+  border-color:
+    rgb(255 255 255 / 0.22);
+}
+
+.cosmos-control-note {
+  margin:
+    12px 0 0;
+
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+
+  font-size: 0.52rem;
+
+  line-height: 1.55;
+
+  letter-spacing: 0.04em;
+
+  opacity: 0.36;
+}
+
 .cosmos-caption {
   position: absolute;
 
@@ -289,7 +589,7 @@
   width:
     min(
       720px,
-      calc(100vw - 48px)
+      calc(100vw - 720px)
     );
 
   text-align: center;
@@ -303,11 +603,17 @@
 }
 
 .cosmos-caption span {
-  font-size: 0.72rem;
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
 
-  letter-spacing: 0.08em;
+  font-size: 0.56rem;
 
-  opacity: 0.44;
+  letter-spacing: 0.13em;
+
+  opacity: 0.38;
 }
 
 .cosmos-caption strong {
@@ -324,28 +630,54 @@
 }
 
 @media (
-  max-width: 720px
+  max-width: 900px
 ) {
-  .cosmos-hud {
-    top: 22px;
-    left: 20px;
-  }
-
   .cosmos-readout {
-    top: auto;
-    right: 20px;
-    bottom: 104px;
-
-    width: 190px;
-
-    padding: 12px;
-  }
-
-  .cosmos-readout > div {
-    padding: 4px 0;
+    display: none;
   }
 
   .cosmos-caption {
-    bottom: 24px;
+    width:
+      min(
+        500px,
+        calc(100vw - 380px)
+      );
+  }
+}
+
+@media (
+  max-width: 720px
+) {
+  .cosmos-hud {
+    top: 20px;
+    left: 20px;
+  }
+
+  .cosmos-brand {
+    font-size: 1.8rem;
+  }
+
+  .cosmos-controls {
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+
+    width: auto;
+
+    max-height: 42vh;
+
+    padding: 14px;
+  }
+
+  .cosmos-rotation-grid {
+    grid-template-columns:
+      repeat(
+        3,
+        minmax(0, 1fr)
+      );
+  }
+
+  .cosmos-caption {
+    display: none;
   }
 }

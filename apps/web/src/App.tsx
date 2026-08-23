@@ -34,43 +34,132 @@ type ViewportStatus =
   | "LIVE"
   | "ERROR";
 
-function createRotation(
-  elapsedSeconds: number
+interface RotationAngles {
+  readonly XY: number;
+  readonly XZ: number;
+  readonly XW: number;
+  readonly YZ: number;
+  readonly YW: number;
+  readonly ZW: number;
+}
+
+type RotationKey =
+  keyof RotationAngles;
+
+const ZERO_ROTATION:
+  RotationAngles = {
+    XY: 0,
+    XZ: 0,
+    XW: 0,
+    YZ: 0,
+    YW: 0,
+    ZW: 0
+  };
+
+const AUTO_ROTATION_SPEED:
+  RotationAngles = {
+    XY: 0.17,
+    XZ: 0.11,
+    XW: 0.31,
+    YZ: 0.13,
+    YW: 0.23,
+    ZW: 0.19
+  };
+
+const ROTATION_CONTROLS:
+  readonly {
+    readonly key: RotationKey;
+    readonly label: string;
+    readonly fourthDimensional: boolean;
+  }[] = [
+    {
+      key: "XY",
+      label: "XY",
+      fourthDimensional: false
+    },
+    {
+      key: "XZ",
+      label: "XZ",
+      fourthDimensional: false
+    },
+    {
+      key: "XW",
+      label: "XW",
+      fourthDimensional: true
+    },
+    {
+      key: "YZ",
+      label: "YZ",
+      fourthDimensional: false
+    },
+    {
+      key: "YW",
+      label: "YW",
+      fourthDimensional: true
+    },
+    {
+      key: "ZW",
+      label: "ZW",
+      fourthDimensional: true
+    }
+  ];
+
+function degrees(
+  radians: number
+): number {
+  return (
+    radians *
+    180 /
+    Math.PI
+  );
+}
+
+function combineRotations(
+  manual:
+    RotationAngles,
+  automatic:
+    RotationAngles
 ) {
   const xy =
     rotationMatrix4(
       RotationPlane4.XY,
-      elapsedSeconds * 0.17
+      manual.XY +
+        automatic.XY
     );
 
   const xz =
     rotationMatrix4(
       RotationPlane4.XZ,
-      elapsedSeconds * 0.11
+      manual.XZ +
+        automatic.XZ
     );
 
   const xw =
     rotationMatrix4(
       RotationPlane4.XW,
-      elapsedSeconds * 0.31
+      manual.XW +
+        automatic.XW
     );
 
   const yz =
     rotationMatrix4(
       RotationPlane4.YZ,
-      elapsedSeconds * 0.13
+      manual.YZ +
+        automatic.YZ
     );
 
   const yw =
     rotationMatrix4(
       RotationPlane4.YW,
-      elapsedSeconds * 0.23
+      manual.YW +
+        automatic.YW
     );
 
   const zw =
     rotationMatrix4(
       RotationPlane4.ZW,
-      elapsedSeconds * 0.19
+      manual.ZW +
+        automatic.ZW
     );
 
   return multiplyMatrix4(
@@ -105,6 +194,111 @@ function App() {
       "INITIALIZING"
     );
 
+  const [
+    manualAngles,
+    setManualAngles
+  ] =
+    useState<RotationAngles>({
+      ...ZERO_ROTATION
+    });
+
+  const manualAnglesRef =
+    useRef<RotationAngles>({
+      ...ZERO_ROTATION
+    });
+
+  const automaticAnglesRef =
+    useRef<RotationAngles>({
+      ...ZERO_ROTATION
+    });
+
+  const [
+    autoRotation,
+    setAutoRotation
+  ] =
+    useState(true);
+
+  const autoRotationRef =
+    useRef(true);
+
+  const [
+    projectionDistance,
+    setProjectionDistance
+  ] =
+    useState(4.5);
+
+  const projectionDistanceRef =
+    useRef(4.5);
+
+  function updateManualAngle(
+    plane: RotationKey,
+    value: number
+  ): void {
+    if (!Number.isFinite(value)) {
+      return;
+    }
+
+    const next = {
+      ...manualAnglesRef.current,
+      [plane]: value
+    };
+
+    manualAnglesRef.current =
+      next;
+
+    setManualAngles(next);
+  }
+
+  function toggleAutoRotation():
+    void {
+    const next =
+      !autoRotationRef.current;
+
+    autoRotationRef.current =
+      next;
+
+    setAutoRotation(next);
+  }
+
+  function updateProjectionDistance(
+    value: number
+  ): void {
+    if (
+      !Number.isFinite(value) ||
+      value <= 2
+    ) {
+      return;
+    }
+
+    projectionDistanceRef.current =
+      value;
+
+    setProjectionDistance(
+      value
+    );
+  }
+
+  function resetOrientation():
+    void {
+    const zeroManual = {
+      ...ZERO_ROTATION
+    };
+
+    const zeroAutomatic = {
+      ...ZERO_ROTATION
+    };
+
+    manualAnglesRef.current =
+      zeroManual;
+
+    automaticAnglesRef.current =
+      zeroAutomatic;
+
+    setManualAngles(
+      zeroManual
+    );
+  }
+
   useEffect(() => {
     const currentCanvas =
       canvasRef.current;
@@ -113,13 +307,6 @@ function App() {
       return;
     }
 
-    /**
-     * Capture the validated element in an explicitly non-null variable.
-     *
-     * This matters because the canvas is later used inside asynchronous
-     * functions and callbacks. We do not want those scopes depending on
-     * the mutable React ref.
-     */
     const canvasElement:
       HTMLCanvasElement =
         currentCanvas;
@@ -167,10 +354,6 @@ function App() {
                 rect.height
               ),
 
-            /**
-             * Restrict excessive render resolution on very
-             * high-density displays during the first prototype.
-             */
             pixelRatio:
               Math.min(
                 window.devicePixelRatio ||
@@ -191,7 +374,7 @@ function App() {
           canvasElement
         );
 
-        const startedAt =
+        let previousFrameTime =
           performance.now();
 
         const renderFrame = (
@@ -201,64 +384,87 @@ function App() {
             return;
           }
 
-          const elapsedSeconds =
-            (
-              now -
-              startedAt
-            ) /
-            1000;
-
-          /**
-           * STEP 1
-           *
-           * Create an actual transformation in R^4.
-           */
-          const rotation =
-            createRotation(
-              elapsedSeconds
+          const deltaSeconds =
+            Math.min(
+              (
+                now -
+                previousFrameTime
+              ) /
+                1000,
+              0.1
             );
 
+          previousFrameTime =
+            now;
+
+          if (
+            autoRotationRef.current
+          ) {
+            const current =
+              automaticAnglesRef.current;
+
+            automaticAnglesRef.current = {
+              XY:
+                current.XY +
+                AUTO_ROTATION_SPEED.XY *
+                  deltaSeconds,
+
+              XZ:
+                current.XZ +
+                AUTO_ROTATION_SPEED.XZ *
+                  deltaSeconds,
+
+              XW:
+                current.XW +
+                AUTO_ROTATION_SPEED.XW *
+                  deltaSeconds,
+
+              YZ:
+                current.YZ +
+                AUTO_ROTATION_SPEED.YZ *
+                  deltaSeconds,
+
+              YW:
+                current.YW +
+                AUTO_ROTATION_SPEED.YW *
+                  deltaSeconds,
+
+              ZW:
+                current.ZW +
+                AUTO_ROTATION_SPEED.ZW *
+                  deltaSeconds
+            };
+          }
+
           /**
-           * STEP 2
+           * The complete orientation is calculated in R^4.
            *
-           * Apply the Matrix4 transformation to the real
-           * four-dimensional tesseract vertices.
+           * Manual slider angles and accumulated automatic angles
+           * are combined before projection.
            */
+          const rotation =
+            combineRotations(
+              manualAnglesRef.current,
+              automaticAnglesRef.current
+            );
+
           const rotated =
             transformTesseract(
               BASE_TESSERACT,
               rotation
             );
 
-          /**
-           * STEP 3
-           *
-           * Project R^4 -> R^3 only after the true
-           * four-dimensional transformation has occurred.
-           */
           const projected =
             projectTesseractPerspective(
               rotated,
-              4.5
+              projectionDistanceRef.current
             );
 
-          /**
-           * STEP 4
-           *
-           * Translate scientific geometry into the generic
-           * renderer representation.
-           */
           const renderMesh =
             createProjectedTesseractRenderMesh(
               projected
             );
 
-          /**
-           * STEP 5
-           *
-           * Only the resulting three-dimensional local data
-           * reaches the graphics backend.
-           */
           backend.renderLineMesh(
             renderMesh
           );
@@ -365,18 +571,173 @@ function App() {
         </div>
 
         <div>
-          <span>ROTATION PLANES</span>
-          <strong>6 ACTIVE</strong>
+          <span>
+            AUTO ROTATION
+          </span>
+
+          <strong>
+            {autoRotation
+              ? "ACTIVE"
+              : "PAUSED"}
+          </strong>
         </div>
       </aside>
 
+      <section
+        className="cosmos-controls"
+        aria-label="Four-dimensional rotation controls"
+      >
+        <header className="cosmos-controls-header">
+          <div>
+            <span className="cosmos-panel-kicker">
+              MANUAL CONTROL
+            </span>
+
+            <h2>
+              4D ROTATION
+            </h2>
+          </div>
+
+          <button
+            className={
+              autoRotation
+                ? "cosmos-toggle is-active"
+                : "cosmos-toggle"
+            }
+            type="button"
+            onClick={
+              toggleAutoRotation
+            }
+            aria-pressed={
+              autoRotation
+            }
+          >
+            AUTO
+          </button>
+        </header>
+
+        <div className="cosmos-rotation-grid">
+          {ROTATION_CONTROLS.map(
+            ({
+              key,
+              label,
+              fourthDimensional
+            }) => (
+              <label
+                className={
+                  fourthDimensional
+                    ? "cosmos-slider is-fourth-dimensional"
+                    : "cosmos-slider"
+                }
+                key={key}
+              >
+                <div className="cosmos-slider-heading">
+                  <span>
+                    {label}
+                  </span>
+
+                  <output>
+                    {degrees(
+                      manualAngles[
+                        key
+                      ]
+                    ).toFixed(0)}
+                    °
+                  </output>
+                </div>
+
+                <input
+                  type="range"
+                  min={
+                    -Math.PI
+                  }
+                  max={
+                    Math.PI
+                  }
+                  step="0.01"
+                  value={
+                    manualAngles[
+                      key
+                    ]
+                  }
+                  onChange={
+                    (event) =>
+                      updateManualAngle(
+                        key,
+                        Number(
+                          event
+                            .currentTarget
+                            .value
+                        )
+                      )
+                  }
+                  aria-label={
+                    `${label} rotation angle`
+                  }
+                />
+              </label>
+            )
+          )}
+        </div>
+
+        <div className="cosmos-control-divider" />
+
+        <label className="cosmos-slider cosmos-projection-control">
+          <div className="cosmos-slider-heading">
+            <span>
+              4D VIEW DISTANCE
+            </span>
+
+            <output>
+              {projectionDistance
+                .toFixed(2)}
+            </output>
+          </div>
+
+          <input
+            type="range"
+            min="2.25"
+            max="12"
+            step="0.05"
+            value={
+              projectionDistance
+            }
+            onChange={
+              (event) =>
+                updateProjectionDistance(
+                  Number(
+                    event
+                      .currentTarget
+                      .value
+                  )
+                )
+            }
+            aria-label="Four-dimensional perspective projection distance"
+          />
+        </label>
+
+        <button
+          type="button"
+          className="cosmos-reset"
+          onClick={
+            resetOrientation
+          }
+        >
+          RESET 4D ORIENTATION
+        </button>
+
+        <p className="cosmos-control-note">
+          XW, YW and ZW directly mix visible space with the fourth spatial axis.
+        </p>
+      </section>
+
       <div className="cosmos-caption">
         <span>
-          Not a simulated 3D cube.
+          TRUE FOUR-DIMENSIONAL TRANSFORMATION
         </span>
 
         <strong>
-          Every frame is transformed in four-dimensional space first.
+          Rotate through W and watch the 3D projection deform.
         </strong>
       </div>
     </main>
