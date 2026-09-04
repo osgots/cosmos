@@ -943,3 +943,1092 @@ input:focus-visible {
     display: none;
   }
 }
+
+/* =====================================================================
+   COSMOS∞ — UNIVERSE EXPLORER HOME
+   ===================================================================== */
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: #02050a;
+}
+
+.universe-home {
+  position: relative;
+
+  min-height: 100vh;
+
+  overflow: hidden;
+
+  color: #eef8ff;
+
+  background:
+    radial-gradient(
+      circle at 70% 10%,
+      rgb(31 54 100 / 0.22),
+      transparent 34%
+    ),
+    radial-gradient(
+      circle at 20% 30%,
+      rgb(0 137 180 / 0.1),
+      transparent 28%
+    ),
+    linear-gradient(
+      180deg,
+      #02050a,
+      #030712 60%,
+      #010205
+    );
+}
+
+.universe-grid {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 0;
+
+  pointer-events: none;
+
+  opacity: 0.35;
+
+  background-image:
+    linear-gradient(
+      rgb(255 255 255 / 0.025) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgb(255 255 255 / 0.025) 1px,
+      transparent 1px
+    );
+
+  background-size:
+    72px 72px;
+
+  mask-image:
+    radial-gradient(
+      circle at 50% 25%,
+      black,
+      transparent 80%
+    );
+}
+
+.universe-nav {
+  position: relative;
+
+  z-index: 10;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  width:
+    min(
+      1400px,
+      calc(100% - 72px)
+    );
+
+  margin: 0 auto;
+
+  padding:
+    28px 0;
+
+  border-bottom:
+    1px solid
+    rgb(255 255 255 / 0.07);
+}
+
+.universe-logo {
+  padding: 0;
+
+  border: 0;
+
+  background: transparent;
+
+  color: inherit;
+
+  font-size: 1.15rem;
+
+  font-weight: 800;
+
+  letter-spacing: 0.2em;
+}
+
+.universe-logo span {
+  margin-left: 2px;
+
+  font-weight: 300;
+}
+
+.universe-nav nav {
+  display: flex;
+
+  align-items: center;
+
+  gap: 30px;
+}
+
+.universe-nav a,
+.universe-nav nav button {
+  padding: 0;
+
+  border: 0;
+
+  background: transparent;
+
+  color:
+    rgb(238 248 255 / 0.56);
+
+  cursor: pointer;
+
+  text-decoration: none;
+
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+
+  font-size: 0.65rem;
+
+  letter-spacing: 0.14em;
+}
+
+.universe-nav a:hover,
+.universe-nav nav button:hover {
+  color: #ffffff;
+}
+
+.universe-hero {
+  position: relative;
+
+  z-index: 2;
+
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content: center;
+
+  min-height:
+    calc(
+      100vh - 86px
+    );
+
+  width:
+    min(
+      1400px,
+      calc(100% - 72px)
+    );
+
+  margin: 0 auto;
+
+  padding:
+    80px 0 120px;
+}
+
+.universe-eyebrow,
+.universe-section-label {
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+
+  font-size: 0.64rem;
+
+  letter-spacing: 0.2em;
+
+  color:
+    rgb(126 219 255 / 0.72);
+}
+
+.universe-hero h1 {
+  max-width: 1100px;
+
+  margin:
+    28px 0 30px;
+
+  font-size:
+    clamp(
+      4rem,
+      8vw,
+      8.8rem
+    );
+
+  line-height: 0.91;
+
+  letter-spacing: -0.065em;
+
+  font-weight: 570;
+}
+
+.universe-hero h1 span {
+  color:
+    rgb(238 248 255 / 0.42);
+}
+
+.universe-hero > p {
+  max-width: 720px;
+
+  margin: 0;
+
+  color:
+    rgb(225 240 250 / 0.56);
+
+  font-size:
+    clamp(
+      1rem,
+      1.6vw,
+      1.3rem
+    );
+
+  line-height: 1.7;
+}
+
+.universe-hero-actions {
+  display: flex;
+
+  align-items: center;
+
+  gap: 14px;
+
+  margin-top: 42px;
+}
+
+.universe-primary-button,
+.universe-secondary-button {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  min-height: 48px;
+
+  padding:
+    0 20px;
+
+  border-radius: 999px;
+
+  cursor: pointer;
+
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+
+  font-size: 0.63rem;
+
+  letter-spacing: 0.13em;
+
+  text-decoration: none;
+}
+
+.universe-primary-button {
+  gap: 20px;
+
+  border:
+    1px solid
+    rgb(164 228 255 / 0.45);
+
+  color: #eefaff;
+
+  background:
+    rgb(130 215 255 / 0.1);
+}
+
+.universe-secondary-button {
+  border:
+    1px solid
+    rgb(255 255 255 / 0.1);
+
+  color:
+    rgb(235 246 255 / 0.7);
+
+  background:
+    rgb(255 255 255 / 0.025);
+}
+
+.universe-primary-button:hover,
+.universe-secondary-button:hover {
+  border-color:
+    rgb(255 255 255 / 0.38);
+
+  background:
+    rgb(255 255 255 / 0.08);
+}
+
+.universe-origin {
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  margin-top: 54px;
+
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+
+  font-size: 0.54rem;
+
+  letter-spacing: 0.13em;
+}
+
+.universe-origin-dot {
+  width: 6px;
+  height: 6px;
+
+  border-radius: 50%;
+
+  background: #8bddff;
+
+  box-shadow:
+    0 0 18px #8bddff;
+}
+
+.universe-origin span {
+  opacity: 0.32;
+}
+
+.universe-origin strong {
+  font-weight: 500;
+
+  opacity: 0.72;
+}
+
+/* =====================================================================
+   SCALE JOURNEY
+   ===================================================================== */
+
+.universe-journey {
+  position: relative;
+
+  z-index: 2;
+
+  width:
+    min(
+      1400px,
+      calc(100% - 72px)
+    );
+
+  margin: 0 auto;
+
+  padding:
+    130px 0;
+}
+
+.universe-section-heading {
+  max-width: 720px;
+
+  margin-bottom: 70px;
+}
+
+.universe-section-heading > span {
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+
+  font-size: 0.62rem;
+
+  letter-spacing: 0.19em;
+
+  color:
+    rgb(126 219 255 / 0.7);
+}
+
+.universe-section-heading h2,
+.universe-dimensions-section h2 {
+  margin:
+    15px 0 20px;
+
+  font-size:
+    clamp(
+      2.8rem,
+      5vw,
+      5.6rem
+    );
+
+  line-height: 0.98;
+
+  letter-spacing: -0.05em;
+
+  font-weight: 560;
+}
+
+.universe-section-heading p,
+.universe-dimensions-section p {
+  max-width: 650px;
+
+  margin: 0;
+
+  color:
+    rgb(225 240 250 / 0.48);
+
+  line-height: 1.7;
+}
+
+.universe-scale-path {
+  position: relative;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+
+  gap: 1px;
+
+  border:
+    1px solid
+    rgb(255 255 255 / 0.07);
+
+  background:
+    rgb(255 255 255 / 0.07);
+}
+
+.universe-scale-node {
+  position: relative;
+
+  display: grid;
+
+  grid-template-columns:
+    62px 1fr;
+
+  min-height: 180px;
+
+  padding: 28px;
+
+  overflow: hidden;
+
+  background:
+    rgb(3 8 17 / 0.94);
+}
+
+.universe-scale-node:hover {
+  background:
+    rgb(8 16 29 / 0.97);
+}
+
+.universe-scale-index {
+  color:
+    rgb(255 255 255 / 0.18);
+
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+
+  font-size: 0.58rem;
+}
+
+.universe-scale-meta span {
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+
+  font-size: 0.48rem;
+
+  letter-spacing: 0.13em;
+
+  color:
+    rgb(112 216 255 / 0.5);
+}
+
+.universe-scale-content h3 {
+  margin:
+    24px 0 10px;
+
+  font-size:
+    clamp(
+      1.3rem,
+      2vw,
+      2rem
+    );
+
+  font-weight: 520;
+
+  letter-spacing: -0.025em;
+}
+
+.universe-scale-content p {
+  max-width: 460px;
+
+  margin: 0;
+
+  color:
+    rgb(224 239 250 / 0.4);
+
+  font-size: 0.85rem;
+
+  line-height: 1.6;
+}
+
+/* =====================================================================
+   4D LAB SECTION
+   ===================================================================== */
+
+.universe-dimensions-section {
+  position: relative;
+
+  z-index: 2;
+
+  display: grid;
+
+  grid-template-columns:
+    1fr 0.8fr;
+
+  align-items: center;
+
+  gap: 80px;
+
+  width:
+    min(
+      1400px,
+      calc(100% - 72px)
+    );
+
+  margin: 0 auto;
+
+  padding:
+    150px 0;
+}
+
+.universe-lab-card {
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: flex-start;
+
+  min-height: 410px;
+
+  padding: 36px;
+
+  border:
+    1px solid
+    rgb(125 220 255 / 0.18);
+
+  border-radius: 28px;
+
+  background:
+    radial-gradient(
+      circle at 80% 20%,
+      rgb(75 157 255 / 0.14),
+      transparent 36%
+    ),
+    rgb(5 11 22 / 0.75);
+
+  cursor: pointer;
+
+  text-align: left;
+}
+
+.universe-lab-card:hover {
+  border-color:
+    rgb(137 223 255 / 0.45);
+}
+
+.universe-lab-card > span {
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+
+  font-size: 0.58rem;
+
+  letter-spacing: 0.16em;
+
+  color:
+    rgb(128 220 255 / 0.65);
+}
+
+.universe-lab-card > strong {
+  margin-top: auto;
+
+  font-size:
+    clamp(
+      2rem,
+      4vw,
+      4.4rem
+    );
+
+  line-height: 0.95;
+
+  letter-spacing: -0.05em;
+}
+
+.universe-lab-card > small {
+  margin-top: 20px;
+
+  color:
+    rgb(230 243 255 / 0.4);
+
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+
+  font-size: 0.58rem;
+}
+
+.universe-lab-card > div {
+  display: flex;
+
+  justify-content:
+    space-between;
+
+  width: 100%;
+
+  margin-top: 35px;
+
+  padding-top: 20px;
+
+  border-top:
+    1px solid
+    rgb(255 255 255 / 0.08);
+
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+
+  font-size: 0.6rem;
+
+  letter-spacing: 0.12em;
+}
+
+/* =====================================================================
+   SCIENCE
+   ===================================================================== */
+
+.universe-science {
+  position: relative;
+
+  z-index: 2;
+
+  width:
+    min(
+      1400px,
+      calc(100% - 72px)
+    );
+
+  margin: 0 auto;
+
+  padding:
+    120px 0 160px;
+}
+
+.universe-science-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      4,
+      minmax(0, 1fr)
+    );
+
+  border:
+    1px solid
+    rgb(255 255 255 / 0.07);
+}
+
+.universe-science-grid article {
+  min-height: 230px;
+
+  padding: 28px;
+
+  border-right:
+    1px solid
+    rgb(255 255 255 / 0.07);
+}
+
+.universe-science-grid article:last-child {
+  border-right: 0;
+}
+
+.universe-science-grid article > span {
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+
+  font-size: 0.52rem;
+
+  opacity: 0.25;
+}
+
+.universe-science-grid h3 {
+  margin:
+    60px 0 13px;
+
+  font-size: 0.8rem;
+
+  letter-spacing: 0.12em;
+}
+
+.universe-science-grid p {
+  margin: 0;
+
+  color:
+    rgb(225 240 250 / 0.4);
+
+  font-size: 0.8rem;
+
+  line-height: 1.6;
+}
+
+/* =====================================================================
+   LAB NAVIGATION
+   ===================================================================== */
+
+.cosmos-experience-wrapper {
+  position: relative;
+
+  width: 100%;
+  height: 100vh;
+
+  overflow: hidden;
+}
+
+.cosmos-back-home {
+  position: fixed;
+
+  top: 26px;
+  left: 50%;
+
+  z-index: 100;
+
+  transform:
+    translateX(-50%);
+
+  padding:
+    9px 14px;
+
+  border:
+    1px solid
+    rgb(255 255 255 / 0.13);
+
+  border-radius: 999px;
+
+  background:
+    rgb(2 8 16 / 0.55);
+
+  color:
+    rgb(236 248 255 / 0.72);
+
+  backdrop-filter:
+    blur(18px);
+
+  cursor: pointer;
+
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+
+  font-size: 0.56rem;
+
+  letter-spacing: 0.13em;
+}
+
+.cosmos-back-home:hover {
+  color: white;
+
+  border-color:
+    rgb(255 255 255 / 0.3);
+}
+
+/* =====================================================================
+   FOOTER
+   ===================================================================== */
+
+.universe-footer {
+  position: relative;
+
+  z-index: 2;
+
+  display: flex;
+
+  justify-content:
+    space-between;
+
+  width:
+    min(
+      1400px,
+      calc(100% - 72px)
+    );
+
+  margin: 0 auto;
+
+  padding:
+    30px 0 40px;
+
+  border-top:
+    1px solid
+    rgb(255 255 255 / 0.08);
+
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+
+  font-size: 0.55rem;
+
+  letter-spacing: 0.14em;
+
+  opacity: 0.4;
+}
+
+/* =====================================================================
+   RESPONSIVE
+   ===================================================================== */
+
+@media (
+  max-width: 900px
+) {
+  .universe-scale-path {
+    grid-template-columns:
+      1fr;
+  }
+
+  .universe-dimensions-section {
+    grid-template-columns:
+      1fr;
+
+    gap: 50px;
+  }
+
+  .universe-science-grid {
+    grid-template-columns:
+      repeat(
+        2,
+        1fr
+      );
+  }
+
+  .universe-science-grid article:nth-child(2) {
+    border-right: 0;
+  }
+}
+
+@media (
+  max-width: 650px
+) {
+  .universe-nav,
+  .universe-hero,
+  .universe-journey,
+  .universe-dimensions-section,
+  .universe-science,
+  .universe-footer {
+    width:
+      calc(
+        100% - 36px
+      );
+  }
+
+  .universe-nav nav {
+    gap: 14px;
+  }
+
+  .universe-nav nav a:nth-child(3) {
+    display: none;
+  }
+
+  .universe-hero {
+    min-height: 90vh;
+
+    padding-bottom: 80px;
+  }
+
+  .universe-hero h1 {
+    font-size:
+      clamp(
+        3.5rem,
+        17vw,
+        5.5rem
+      );
+  }
+
+  .universe-hero-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .universe-origin {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .universe-scale-node {
+    grid-template-columns:
+      42px 1fr;
+
+    padding: 20px;
+  }
+
+  .universe-science-grid {
+    grid-template-columns:
+      1fr;
+  }
+
+  .universe-science-grid article {
+    border-right: 0;
+
+    border-bottom:
+      1px solid
+      rgb(255 255 255 / 0.07);
+  }
+
+  .universe-footer {
+    flex-direction: column;
+
+    gap: 12px;
+  }
+}
+
+/* =====================================================================
+   COSMOS∞ NAVIGATION + SCROLL CORRECTIONS
+   ===================================================================== */
+
+/*
+ * The Universe Explorer is a normal long document.
+ *
+ * The 4D Lab is the only experience allowed to lock the viewport.
+ */
+
+html {
+  width: 100%;
+  min-height: 100%;
+
+  overflow-x: hidden;
+  overflow-y: auto;
+
+  scroll-behavior: smooth;
+}
+
+body {
+  width: 100%;
+  min-width: 320px;
+  min-height: 100vh;
+
+  margin: 0;
+
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+/*
+ * Do NOT use overflow:hidden on the long Universe homepage.
+ *
+ * Horizontal clipping is enough to stop decorative elements from
+ * creating a sideways scrollbar.
+ */
+.universe-home {
+  width: 100%;
+  min-height: 100vh;
+
+  overflow-x: clip;
+  overflow-y: visible;
+}
+
+/*
+ * The navigation targets stop slightly below the top edge instead of
+ * being glued directly to it after scrollIntoView().
+ */
+#journey,
+#science {
+  scroll-margin-top: 42px;
+}
+
+/*
+ * Only the fullscreen scientific lab locks document scrolling.
+ */
+html.cosmos-lab-active,
+body.cosmos-lab-active {
+  height: 100%;
+
+  overflow: hidden;
+}
+
+body.cosmos-lab-active #root {
+  height: 100%;
+  min-height: 100%;
+
+  overflow: hidden;
+}
+
+.cosmos-experience-wrapper {
+  position: fixed;
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  overflow: hidden;
+}
+
+/*
+ * Homepage navigation is button based now rather than fake anchor
+ * routing. Keep all nav controls visually identical.
+ */
+.universe-nav nav button {
+  appearance: none;
+}
+
+/*
+ * BEGIN JOURNEY changed from an anchor to a real action button.
+ */
+.universe-primary-button {
+  appearance: none;
+}
+
+/*
+ * Make the in-lab Back control reliable above WebGPU/canvas layers.
+ */
+.cosmos-back-home {
+  z-index: 1000;
+
+  touch-action: manipulation;
+}
+
+/*
+ * Mobile long-page scrolling.
+ */
+@media (max-width: 650px) {
+  .universe-home {
+    overflow-x: hidden;
+  }
+
+  #journey,
+  #science {
+    scroll-margin-top: 22px;
+  }
+}

@@ -1,1102 +1,793 @@
 ﻿import {
   useEffect,
-  useRef,
   useState
 } from "react";
 
-import {
-  RotationPlane4,
-  multiplyMatrix4,
-  rotationMatrix4
-} from "@cosmos/math-core";
-
-import {
-  createTesseract,
-  projectTesseractOrthographic,
-  projectTesseractPerspective,
-  sliceTesseractAtW,
-  transformTesseract
-} from "@cosmos/geometry-4d";
-
-import {
-  createTesseractSliceRenderMesh,
-  createWEncodedProjectedTesseractRenderMesh
-} from "@cosmos/visualization";
-
-import {
-  ThreeWebGPUBackend
-} from "@cosmos/renderer/three-webgpu";
+import TesseractLab from "./features/dimensions/TesseractLab";
 
 import "./App.css";
 
-const BASE_TESSERACT =
-  createTesseract(2);
+type CosmosExperience =
+  | "HOME"
+  | "4D_LAB";
 
-type ViewportStatus =
-  | "INITIALIZING"
-  | "LIVE"
-  | "ERROR";
-
-type ViewMode =
-  | "PERSPECTIVE"
-  | "ORTHOGRAPHIC"
-  | "SLICE";
-
-interface RotationAngles {
-  readonly XY: number;
-  readonly XZ: number;
-  readonly XW: number;
-  readonly YZ: number;
-  readonly YW: number;
-  readonly ZW: number;
+interface ScaleDestination {
+  readonly id: string;
+  readonly title: string;
+  readonly subtitle: string;
+  readonly status:
+    | "READY"
+    | "FOUNDATION"
+    | "UPCOMING";
 }
 
-interface RenderStats {
-  readonly vertices: number;
-  readonly edges: number;
-}
-
-type RotationKey =
-  keyof RotationAngles;
-
-const ZERO_ROTATION:
-  RotationAngles = {
-    XY: 0,
-    XZ: 0,
-    XW: 0,
-    YZ: 0,
-    YW: 0,
-    ZW: 0
-  };
-
-const AUTO_ROTATION_SPEED:
-  RotationAngles = {
-    XY: 0.17,
-    XZ: 0.11,
-    XW: 0.31,
-    YZ: 0.13,
-    YW: 0.23,
-    ZW: 0.19
-  };
-
-const ROTATION_CONTROLS:
-  readonly {
-    readonly key: RotationKey;
-    readonly label: string;
-    readonly fourthDimensional: boolean;
-  }[] = [
+const SCALE_DESTINATIONS:
+  readonly ScaleDestination[] = [
     {
-      key: "XY",
-      label: "XY",
-      fourthDimensional: false
+      id: "human",
+      title: "Human",
+      subtitle: "Begin from the scale you know.",
+      status: "UPCOMING"
     },
     {
-      key: "XZ",
-      label: "XZ",
-      fourthDimensional: false
+      id: "earth",
+      title: "Earth",
+      subtitle: "Our planetary reference frame.",
+      status: "FOUNDATION"
     },
     {
-      key: "XW",
-      label: "XW",
-      fourthDimensional: true
+      id: "moon",
+      title: "Moon",
+      subtitle: "Earth's natural satellite.",
+      status: "UPCOMING"
     },
     {
-      key: "YZ",
-      label: "YZ",
-      fourthDimensional: false
+      id: "solar-system",
+      title: "Solar System",
+      subtitle: "From the Sun to the outer frontier.",
+      status: "UPCOMING"
     },
     {
-      key: "YW",
-      label: "YW",
-      fourthDimensional: true
+      id: "nearby-stars",
+      title: "Nearby Stars",
+      subtitle: "Enter the local stellar neighborhood.",
+      status: "UPCOMING"
     },
     {
-      key: "ZW",
-      label: "ZW",
-      fourthDimensional: true
+      id: "milky-way",
+      title: "Milky Way",
+      subtitle: "Our galactic structure.",
+      status: "UPCOMING"
+    },
+    {
+      id: "local-group",
+      title: "Local Group",
+      subtitle: "The neighborhood of galaxies around us.",
+      status: "UPCOMING"
+    },
+    {
+      id: "clusters",
+      title: "Galaxy Clusters",
+      subtitle: "Gravity on enormous scales.",
+      status: "UPCOMING"
+    },
+    {
+      id: "superclusters",
+      title: "Superclusters",
+      subtitle: "Structures spanning hundreds of millions of light-years.",
+      status: "UPCOMING"
+    },
+    {
+      id: "cosmic-web",
+      title: "Cosmic Web",
+      subtitle: "Filaments, walls and immense voids.",
+      status: "UPCOMING"
+    },
+    {
+      id: "observable-universe",
+      title: "Observable Universe",
+      subtitle: "The present cosmological horizon.",
+      status: "UPCOMING"
+    },
+    {
+      id: "beyond",
+      title: "Beyond the Horizon",
+      subtitle: "Physics-constrained continuation beyond observation.",
+      status: "UPCOMING"
+    },
+    {
+      id: "infinity",
+      title: "∞",
+      subtitle: "Exploration does not end at the visible universe.",
+      status: "UPCOMING"
     }
   ];
 
-const VIEW_MODES:
-  readonly {
-    readonly mode: ViewMode;
-    readonly label: string;
-  }[] = [
-    {
-      mode: "PERSPECTIVE",
-      label: "PERSPECTIVE"
-    },
-    {
-      mode: "ORTHOGRAPHIC",
-      label: "ORTHO"
-    },
-    {
-      mode: "SLICE",
-      label: "TRUE SLICE"
-    }
-  ];
+const HOME_SCROLL_KEY =
+  "cosmos-home-scroll";
 
-function degrees(
-  radians: number
-): number {
-  return (
-    radians *
-    180 /
-    Math.PI
+function routeFromLocation():
+  CosmosExperience {
+  if (
+    window.location.hash ===
+    "#/4d-lab"
+  ) {
+    return "4D_LAB";
+  }
+
+  return "HOME";
+}
+
+function saveHomeScroll():
+  void {
+  try {
+    sessionStorage.setItem(
+      HOME_SCROLL_KEY,
+      String(
+        window.scrollY
+      )
+    );
+  } catch {
+    // Session storage is optional.
+  }
+}
+
+function readHomeScroll():
+  number {
+  try {
+    const stored =
+      sessionStorage.getItem(
+        HOME_SCROLL_KEY
+      );
+
+    if (
+      stored === null
+    ) {
+      return 0;
+    }
+
+    const value =
+      Number(stored);
+
+    return Number.isFinite(
+      value
+    )
+      ? Math.max(
+          0,
+          value
+        )
+      : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function restoreHomeScroll():
+  void {
+  const target =
+    readHomeScroll();
+
+  /**
+   * Two animation frames ensure the long homepage has been mounted
+   * and laid out before the previous scroll position is restored.
+   */
+  requestAnimationFrame(
+    () => {
+      requestAnimationFrame(
+        () => {
+          window.scrollTo({
+            top: target,
+            left: 0,
+            behavior: "instant"
+          });
+        }
+      );
+    }
   );
 }
 
-function combineRotations(
-  manual: RotationAngles,
-  automatic: RotationAngles
-) {
-  const xy =
-    rotationMatrix4(
-      RotationPlane4.XY,
-      manual.XY +
-        automatic.XY
-    );
+interface CosmosHomeProps {
+  readonly onOpen4D:
+    () => void;
 
-  const xz =
-    rotationMatrix4(
-      RotationPlane4.XZ,
-      manual.XZ +
-        automatic.XZ
-    );
+  readonly onScrollTo:
+    (
+      sectionId: string
+    ) => void;
+}
 
-  const xw =
-    rotationMatrix4(
-      RotationPlane4.XW,
-      manual.XW +
-        automatic.XW
-    );
+function CosmosHome({
+  onOpen4D,
+  onScrollTo
+}: CosmosHomeProps) {
+  return (
+    <main className="universe-home">
+      <div
+        className="universe-grid"
+        aria-hidden="true"
+      />
 
-  const yz =
-    rotationMatrix4(
-      RotationPlane4.YZ,
-      manual.YZ +
-        automatic.YZ
-    );
+      <header className="universe-nav">
+        <button
+          type="button"
+          className="universe-logo"
+          onClick={
+            () =>
+              window.scrollTo({
+                top: 0,
+                behavior: "smooth"
+              })
+          }
+          aria-label="Return to the top of Cosmos Infinity"
+        >
+          COSMOS
+          <span>∞</span>
+        </button>
 
-  const yw =
-    rotationMatrix4(
-      RotationPlane4.YW,
-      manual.YW +
-        automatic.YW
-    );
+        <nav
+          aria-label="Cosmos Infinity navigation"
+        >
+          <button
+            type="button"
+            onClick={
+              () =>
+                onScrollTo(
+                  "journey"
+                )
+            }
+          >
+            EXPLORE
+          </button>
 
-  const zw =
-    rotationMatrix4(
-      RotationPlane4.ZW,
-      manual.ZW +
-        automatic.ZW
-    );
+          <button
+            type="button"
+            onClick={
+              onOpen4D
+            }
+          >
+            4D LAB
+          </button>
 
-  return multiplyMatrix4(
-    zw,
-    multiplyMatrix4(
-      yw,
-      multiplyMatrix4(
-        yz,
-        multiplyMatrix4(
-          xw,
-          multiplyMatrix4(
-            xz,
-            xy
-          )
-        )
-      )
-    )
+          <button
+            type="button"
+            onClick={
+              () =>
+                onScrollTo(
+                  "science"
+                )
+            }
+          >
+            SCIENCE
+          </button>
+        </nav>
+      </header>
+
+      <section className="universe-hero">
+        <div className="universe-eyebrow">
+          INTERACTIVE REALITY ENGINE
+        </div>
+
+        <h1>
+          Explore reality
+          <br />
+
+          <span>
+            without a final edge.
+          </span>
+        </h1>
+
+        <p>
+          Travel from familiar human scales through
+          planets, stars, galaxies, the cosmic web and
+          the observable universe — then continue beyond
+          the horizon using clearly labelled
+          physics-constrained models.
+        </p>
+
+        <div className="universe-hero-actions">
+          <button
+            type="button"
+            className="universe-primary-button"
+            onClick={
+              () =>
+                onScrollTo(
+                  "journey"
+                )
+            }
+          >
+            BEGIN JOURNEY
+
+            <span>
+              ↓
+            </span>
+          </button>
+
+          <button
+            type="button"
+            className="universe-secondary-button"
+            onClick={
+              onOpen4D
+            }
+          >
+            ENTER 4D LAB
+          </button>
+        </div>
+
+        <div className="universe-origin">
+          <span
+            className="universe-origin-dot"
+            aria-hidden="true"
+          />
+
+          <span>
+            CURRENT FOUNDATION
+          </span>
+
+          <strong>
+            TRUE R⁴ GEOMETRY ACTIVE
+          </strong>
+        </div>
+      </section>
+
+      <section
+        id="journey"
+        className="universe-journey"
+      >
+        <header className="universe-section-heading">
+          <span>
+            SCALE JOURNEY
+          </span>
+
+          <h2>
+            From you to ∞
+          </h2>
+
+          <p>
+            Each level will become an interactive
+            scientific environment rather than a
+            static page.
+          </p>
+        </header>
+
+        <div className="universe-scale-path">
+          {SCALE_DESTINATIONS.map(
+            (
+              destination,
+              index
+            ) => (
+              <article
+                key={
+                  destination.id
+                }
+                className="universe-scale-node"
+                data-status={
+                  destination.status
+                }
+              >
+                <div className="universe-scale-index">
+                  {String(
+                    index + 1
+                  ).padStart(
+                    2,
+                    "0"
+                  )}
+                </div>
+
+                <div className="universe-scale-content">
+                  <div className="universe-scale-meta">
+                    <span>
+                      {
+                        destination.status
+                      }
+                    </span>
+                  </div>
+
+                  <h3>
+                    {
+                      destination.title
+                    }
+                  </h3>
+
+                  <p>
+                    {
+                      destination.subtitle
+                    }
+                  </p>
+                </div>
+              </article>
+            )
+          )}
+        </div>
+      </section>
+
+      <section className="universe-dimensions-section">
+        <div>
+          <span className="universe-section-label">
+            DIMENSIONS LAB
+          </span>
+
+          <h2>
+            Space doesn't stop at three.
+          </h2>
+
+          <p>
+            Our first working scientific laboratory
+            performs real four-dimensional rotations,
+            projection and geometric slicing rather
+            than animating a fake 3D cube.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          className="universe-lab-card"
+          onClick={
+            onOpen4D
+          }
+        >
+          <span>
+            LIVE LAB 01
+          </span>
+
+          <strong>
+            FOUR-DIMENSIONAL
+            <br />
+            TESSERACT
+          </strong>
+
+          <small>
+            16 vertices · 32 edges · 6 rotation planes
+          </small>
+
+          <div>
+            OPEN EXPERIMENT
+            <b>↗</b>
+          </div>
+        </button>
+      </section>
+
+      <section
+        id="science"
+        className="universe-science"
+      >
+        <header className="universe-section-heading">
+          <span>
+            SCIENTIFIC HONESTY
+          </span>
+
+          <h2>
+            Know what you're looking at.
+          </h2>
+        </header>
+
+        <div className="universe-science-grid">
+          <article>
+            <span>01</span>
+
+            <h3>
+              OBSERVED
+            </h3>
+
+            <p>
+              Directly supported by observational
+              evidence.
+            </p>
+          </article>
+
+          <article>
+            <span>02</span>
+
+            <h3>
+              ESTABLISHED MODEL
+            </h3>
+
+            <p>
+              Standard scientific models with their
+              assumptions exposed.
+            </p>
+          </article>
+
+          <article>
+            <span>03</span>
+
+            <h3>
+              EXTRAPOLATED
+            </h3>
+
+            <p>
+              Physics-constrained continuation where
+              observation can no longer reach.
+            </p>
+          </article>
+
+          <article>
+            <span>04</span>
+
+            <h3>
+              SPECULATIVE
+            </h3>
+
+            <p>
+              Clearly separated from established
+              physics and observation.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <footer className="universe-footer">
+        <strong>
+          COSMOS∞
+        </strong>
+
+        <span>
+          THE UNIVERSE IS NOT A FINAL SCREEN.
+        </span>
+      </footer>
+    </main>
   );
 }
 
 function App() {
-  const canvasRef =
-    useRef<HTMLCanvasElement | null>(
-      null
+  const [
+    experience,
+    setExperience
+  ] =
+    useState<CosmosExperience>(
+      () =>
+        routeFromLocation()
     );
 
-  const [
-    status,
-    setStatus
-  ] =
-    useState<ViewportStatus>(
-      "INITIALIZING"
-    );
+  /**
+   * HOME:
+   * normal document scrolling.
+   *
+   * 4D LAB:
+   * lock document scrolling because the WebGPU viewport owns the
+   * complete screen.
+   */
+  useEffect(
+    () => {
+      const labActive =
+        experience ===
+        "4D_LAB";
 
-  const [
-    manualAngles,
-    setManualAngles
-  ] =
-    useState<RotationAngles>({
-      ...ZERO_ROTATION
-    });
-
-  const manualAnglesRef =
-    useRef<RotationAngles>({
-      ...ZERO_ROTATION
-    });
-
-  const automaticAnglesRef =
-    useRef<RotationAngles>({
-      ...ZERO_ROTATION
-    });
-
-  const [
-    autoRotation,
-    setAutoRotation
-  ] =
-    useState(true);
-
-  const autoRotationRef =
-    useRef(true);
-
-  const [
-    projectionDistance,
-    setProjectionDistance
-  ] =
-    useState(4.5);
-
-  const projectionDistanceRef =
-    useRef(4.5);
-
-  const [
-    viewMode,
-    setViewMode
-  ] =
-    useState<ViewMode>(
-      "PERSPECTIVE"
-    );
-
-  const viewModeRef =
-    useRef<ViewMode>(
-      "PERSPECTIVE"
-    );
-
-  const [
-    sliceW,
-    setSliceW
-  ] =
-    useState(0);
-
-  const sliceWRef =
-    useRef(0);
-
-  const [
-    renderStats,
-    setRenderStats
-  ] =
-    useState<RenderStats>({
-      vertices: 16,
-      edges: 32
-    });
-
-  const renderStatsRef =
-    useRef<RenderStats>({
-      vertices: 16,
-      edges: 32
-    });
-
-  function updateManualAngle(
-    plane: RotationKey,
-    value: number
-  ): void {
-    if (!Number.isFinite(value)) {
-      return;
-    }
-
-    const next = {
-      ...manualAnglesRef.current,
-      [plane]: value
-    };
-
-    manualAnglesRef.current =
-      next;
-
-    setManualAngles(next);
-  }
-
-  function toggleAutoRotation():
-    void {
-    const next =
-      !autoRotationRef.current;
-
-    autoRotationRef.current =
-      next;
-
-    setAutoRotation(next);
-  }
-
-  function updateProjectionDistance(
-    value: number
-  ): void {
-    if (
-      !Number.isFinite(value) ||
-      value <= 2
-    ) {
-      return;
-    }
-
-    projectionDistanceRef.current =
-      value;
-
-    setProjectionDistance(
-      value
-    );
-  }
-
-  function updateSliceW(
-    value: number
-  ): void {
-    if (!Number.isFinite(value)) {
-      return;
-    }
-
-    sliceWRef.current =
-      value;
-
-    setSliceW(value);
-  }
-
-  function selectViewMode(
-    mode: ViewMode
-  ): void {
-    viewModeRef.current =
-      mode;
-
-    setViewMode(mode);
-  }
-
-  function resetOrientation():
-    void {
-    const zeroManual = {
-      ...ZERO_ROTATION
-    };
-
-    const zeroAutomatic = {
-      ...ZERO_ROTATION
-    };
-
-    manualAnglesRef.current =
-      zeroManual;
-
-    automaticAnglesRef.current =
-      zeroAutomatic;
-
-    setManualAngles(
-      zeroManual
-    );
-  }
-
-  function updateRenderStats(
-    vertices: number,
-    edges: number
-  ): void {
-    const previous =
-      renderStatsRef.current;
-
-    if (
-      previous.vertices === vertices &&
-      previous.edges === edges
-    ) {
-      return;
-    }
-
-    const next = {
-      vertices,
-      edges
-    };
-
-    renderStatsRef.current =
-      next;
-
-    setRenderStats(next);
-  }
-
-  useEffect(() => {
-    const currentCanvas =
-      canvasRef.current;
-
-    if (currentCanvas === null) {
-      return;
-    }
-
-    const canvasElement:
-      HTMLCanvasElement =
-        currentCanvas;
-
-    const backend =
-      new ThreeWebGPUBackend();
-
-    let cancelled =
-      false;
-
-    let animationFrame =
-      0;
-
-    let resizeObserver:
-      ResizeObserver | null =
-        null;
-
-    async function start():
-      Promise<void> {
-      try {
-        await backend.initialize(
-          canvasElement
+      document.documentElement
+        .classList
+        .toggle(
+          "cosmos-lab-active",
+          labActive
         );
 
-        if (cancelled) {
-          backend.dispose();
-          return;
-        }
+      document.body
+        .classList
+        .toggle(
+          "cosmos-lab-active",
+          labActive
+        );
 
-        const resize = (): void => {
-          const rect =
-            canvasElement
-              .getBoundingClientRect();
-
-          backend.resize({
-            width:
-              Math.max(
-                1,
-                rect.width
-              ),
-
-            height:
-              Math.max(
-                1,
-                rect.height
-              ),
-
-            pixelRatio:
-              Math.min(
-                window.devicePixelRatio ||
-                  1,
-                2
-              )
-          });
-        };
-
-        resize();
-
-        resizeObserver =
-          new ResizeObserver(
-            resize
+      return () => {
+        document.documentElement
+          .classList
+          .remove(
+            "cosmos-lab-active"
           );
 
-        resizeObserver.observe(
-          canvasElement
-        );
+        document.body
+          .classList
+          .remove(
+            "cosmos-lab-active"
+          );
+      };
+    },
+    [
+      experience
+    ]
+  );
 
-        let previousFrameTime =
-          performance.now();
+  /**
+   * Browser Back / Forward support.
+   *
+   * Hash routing is deliberate because the first deployment target is
+   * GitHub Pages. A route such as /4d-lab would return a 404 after a
+   * hard refresh on Pages unless additional fallback infrastructure
+   * were introduced.
+   */
+  useEffect(
+    () => {
+      const previousScrollRestoration =
+        window.history
+          .scrollRestoration;
 
-        const renderFrame = (
-          now: number
-        ): void => {
-          if (cancelled) {
-            return;
-          }
+      window.history
+        .scrollRestoration =
+          "manual";
 
-          const deltaSeconds =
-            Math.min(
-              (
-                now -
-                previousFrameTime
-              ) /
-                1000,
-              0.1
-            );
+      const handleHistoryNavigation =
+        (): void => {
+          const next =
+            routeFromLocation();
 
-          previousFrameTime =
-            now;
+          setExperience(
+            next
+          );
 
           if (
-            autoRotationRef.current
+            next ===
+            "HOME"
           ) {
-            const current =
-              automaticAnglesRef.current;
-
-            automaticAnglesRef.current = {
-              XY:
-                current.XY +
-                AUTO_ROTATION_SPEED.XY *
-                  deltaSeconds,
-
-              XZ:
-                current.XZ +
-                AUTO_ROTATION_SPEED.XZ *
-                  deltaSeconds,
-
-              XW:
-                current.XW +
-                AUTO_ROTATION_SPEED.XW *
-                  deltaSeconds,
-
-              YZ:
-                current.YZ +
-                AUTO_ROTATION_SPEED.YZ *
-                  deltaSeconds,
-
-              YW:
-                current.YW +
-                AUTO_ROTATION_SPEED.YW *
-                  deltaSeconds,
-
-              ZW:
-                current.ZW +
-                AUTO_ROTATION_SPEED.ZW *
-                  deltaSeconds
-            };
+            restoreHomeScroll();
           }
-
-          const rotation =
-            combineRotations(
-              manualAnglesRef.current,
-              automaticAnglesRef.current
-            );
-
-          const rotated =
-            transformTesseract(
-              BASE_TESSERACT,
-              rotation
-            );
-
-          switch (
-            viewModeRef.current
-          ) {
-            case "PERSPECTIVE": {
-              const projected =
-                projectTesseractPerspective(
-                  rotated,
-                  projectionDistanceRef.current
-                );
-
-              const renderMesh =
-                createWEncodedProjectedTesseractRenderMesh(
-                  rotated,
-                  projected
-                );
-
-              updateRenderStats(
-                renderMesh.vertices.length,
-                renderMesh.edges.length
-              );
-
-              backend.renderLineMesh(
-                renderMesh
-              );
-
-              break;
-            }
-
-            case "ORTHOGRAPHIC": {
-              const projected =
-                projectTesseractOrthographic(
-                  rotated
-                );
-
-              const renderMesh =
-                createWEncodedProjectedTesseractRenderMesh(
-                  rotated,
-                  projected
-                );
-
-              updateRenderStats(
-                renderMesh.vertices.length,
-                renderMesh.edges.length
-              );
-
-              backend.renderLineMesh(
-                renderMesh
-              );
-
-              break;
-            }
-
-            case "SLICE": {
-              const slice =
-                sliceTesseractAtW(
-                  rotated,
-                  sliceWRef.current
-                );
-
-              const renderMesh =
-                createTesseractSliceRenderMesh(
-                  slice
-                );
-
-              updateRenderStats(
-                renderMesh.vertices.length,
-                renderMesh.edges.length
-              );
-
-              backend.renderLineMesh(
-                renderMesh
-              );
-
-              break;
-            }
-          }
-
-          animationFrame =
-            requestAnimationFrame(
-              renderFrame
-            );
         };
 
-        setStatus("LIVE");
+      window.addEventListener(
+        "popstate",
+        handleHistoryNavigation
+      );
 
-        animationFrame =
-          requestAnimationFrame(
-            renderFrame
-          );
-      } catch (error) {
-        console.error(
-          "COSMOS viewport initialization failed:",
-          error
+      window.addEventListener(
+        "hashchange",
+        handleHistoryNavigation
+      );
+
+      return () => {
+        window.removeEventListener(
+          "popstate",
+          handleHistoryNavigation
         );
 
-        if (!cancelled) {
-          setStatus("ERROR");
-        }
-      }
+        window.removeEventListener(
+          "hashchange",
+          handleHistoryNavigation
+        );
+
+        window.history
+          .scrollRestoration =
+            previousScrollRestoration;
+      };
+    },
+    []
+  );
+
+  function open4D():
+    void {
+    saveHomeScroll();
+
+    window.history.pushState(
+      {
+        cosmosRoute:
+          "4d-lab",
+
+        cosmosFromHome:
+          true
+      },
+      "",
+      `${window.location.pathname}${window.location.search}#/4d-lab`
+    );
+
+    setExperience(
+      "4D_LAB"
+    );
+
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: "instant"
+    });
+  }
+
+  function returnFrom4D():
+    void {
+    const state =
+      window.history.state as
+        | {
+            cosmosFromHome?:
+              boolean;
+          }
+        | null;
+
+    /**
+     * Normal case:
+     *
+     * HOME -> 4D LAB
+     *
+     * Go to the actual previous browser-history entry. This means the
+     * browser Back button and the visible Back button behave
+     * consistently.
+     */
+    if (
+      state?.cosmosFromHome ===
+      true
+    ) {
+      window.history.back();
+      return;
     }
 
-    void start();
+    /**
+     * Direct-entry fallback:
+     *
+     * Someone may open or refresh:
+     *
+     *   #/4d-lab
+     *
+     * In that situation we must not send them away from COSMOS∞ when
+     * they press the in-app Back button.
+     */
+    window.history.replaceState(
+      {
+        cosmosRoute:
+          "home"
+      },
+      "",
+      `${window.location.pathname}${window.location.search}#/`
+    );
 
-    return () => {
-      cancelled = true;
+    setExperience(
+      "HOME"
+    );
 
-      if (
-        animationFrame !== 0
-      ) {
-        cancelAnimationFrame(
-          animationFrame
-        );
+    requestAnimationFrame(
+      () => {
+        window.scrollTo({
+          top: 0,
+          left: 0,
+          behavior: "instant"
+        });
       }
+    );
+  }
 
-      resizeObserver
-        ?.disconnect();
+  function scrollToSection(
+    sectionId: string
+  ): void {
+    const section =
+      document.getElementById(
+        sectionId
+      );
 
-      backend.dispose();
-    };
-  }, []);
+    if (
+      section === null
+    ) {
+      return;
+    }
 
-  return (
-    <main className="cosmos-shell">
-      <canvas
-        ref={canvasRef}
-        className="cosmos-viewport"
-        aria-label="Interactive four-dimensional tesseract visualization"
-      />
+    section.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+  }
 
-      <section className="cosmos-hud">
-        <div className="cosmos-brand">
-          COSMOS
-          <span>∞</span>
-        </div>
-
-        <div className="cosmos-subtitle">
-          TRUE 4D GEOMETRY ENGINE
-        </div>
-
-        <div
-          className="cosmos-status"
-          data-status={status}
-        >
-          <span
-            className="cosmos-status-dot"
-            aria-hidden="true"
-          />
-
-          {status}
-        </div>
-      </section>
-
-      <aside className="cosmos-readout">
-        <div>
-          <span>OBJECT</span>
-          <strong>TESSERACT</strong>
-        </div>
-
-        <div>
-          <span>SPACE</span>
-          <strong>R⁴</strong>
-        </div>
-
-        <div>
-          <span>VIEW</span>
-
-          <strong>
-            {viewMode === "SLICE"
-              ? "TRUE SLICE"
-              : viewMode}
-          </strong>
-        </div>
-
-        <div>
-          <span>SOURCE</span>
-          <strong>16 V / 32 E</strong>
-        </div>
-
-        <div>
-          <span>DISPLAY</span>
-
-          <strong>
-            {renderStats.vertices}
-            {" V / "}
-            {renderStats.edges}
-            {" E"}
-          </strong>
-        </div>
-
-        {viewMode ===
-          "SLICE" && (
-          <div>
-            <span>SLICE W</span>
-
-            <strong>
-              {sliceW.toFixed(2)}
-            </strong>
-          </div>
-        )}
-
-        <div>
-          <span>
-            AUTO ROTATION
-          </span>
-
-          <strong>
-            {autoRotation
-              ? "ACTIVE"
-              : "PAUSED"}
-          </strong>
-        </div>
-      </aside>
-
-      {viewMode !==
-        "SLICE" && (
-        <aside
-          className="cosmos-w-legend"
-          aria-label="Fourth spatial coordinate color legend"
-        >
-          <div className="cosmos-w-legend-header">
-            <span>
-              W AXIS
-            </span>
-
-            <strong>
-              VISUAL ENCODING
-            </strong>
-          </div>
-
-          <div
-            className="cosmos-w-gradient"
-            aria-hidden="true"
-          />
-
-          <div className="cosmos-w-labels">
-            <span>−W</span>
-            <span>0</span>
-            <span>+W</span>
-          </div>
-
-          <p>
-            Color encodes fourth-dimensional position after rotation.
-          </p>
-
-          <small>
-            ARTISTIC VISUALIZATION
-          </small>
-        </aside>
-      )}
-
-      <section
-        className="cosmos-controls"
-        aria-label="Four-dimensional controls"
-      >
-        <header className="cosmos-controls-header">
-          <div>
-            <span className="cosmos-panel-kicker">
-              MANUAL CONTROL
-            </span>
-
-            <h2>
-              4D ROTATION
-            </h2>
-          </div>
-
-          <button
-            className={
-              autoRotation
-                ? "cosmos-toggle is-active"
-                : "cosmos-toggle"
-            }
-            type="button"
-            onClick={
-              toggleAutoRotation
-            }
-            aria-pressed={
-              autoRotation
-            }
-          >
-            AUTO
-          </button>
-        </header>
-
-        <div className="cosmos-rotation-grid">
-          {ROTATION_CONTROLS.map(
-            ({
-              key,
-              label,
-              fourthDimensional
-            }) => (
-              <label
-                className={
-                  fourthDimensional
-                    ? "cosmos-slider is-fourth-dimensional"
-                    : "cosmos-slider"
-                }
-                key={key}
-              >
-                <div className="cosmos-slider-heading">
-                  <span>
-                    {label}
-                  </span>
-
-                  <output>
-                    {degrees(
-                      manualAngles[
-                        key
-                      ]
-                    ).toFixed(0)}
-                    °
-                  </output>
-                </div>
-
-                <input
-                  type="range"
-                  min={
-                    -Math.PI
-                  }
-                  max={
-                    Math.PI
-                  }
-                  step="0.01"
-                  value={
-                    manualAngles[
-                      key
-                    ]
-                  }
-                  onChange={
-                    (event) =>
-                      updateManualAngle(
-                        key,
-                        Number(
-                          event
-                            .currentTarget
-                            .value
-                        )
-                      )
-                  }
-                  aria-label={
-                    `${label} rotation angle`
-                  }
-                />
-              </label>
-            )
-          )}
-        </div>
-
-        <div className="cosmos-control-divider" />
-
-        <div className="cosmos-view-section">
-          <div className="cosmos-slider-heading">
-            <span>
-              VIEW MODE
-            </span>
-          </div>
-
-          <div
-            className="cosmos-mode-switch"
-            role="group"
-            aria-label="Four-dimensional viewing mode"
-          >
-            {VIEW_MODES.map(
-              ({
-                mode,
-                label
-              }) => (
-                <button
-                  key={mode}
-                  type="button"
-                  className={
-                    viewMode === mode
-                      ? "cosmos-mode-button is-active"
-                      : "cosmos-mode-button"
-                  }
-                  onClick={
-                    () =>
-                      selectViewMode(
-                        mode
-                      )
-                  }
-                  aria-pressed={
-                    viewMode === mode
-                  }
-                >
-                  {label}
-                </button>
-              )
-            )}
-          </div>
-        </div>
-
-        {viewMode ===
-          "PERSPECTIVE" && (
-          <label className="cosmos-slider cosmos-view-control">
-            <div className="cosmos-slider-heading">
-              <span>
-                4D VIEW DISTANCE
-              </span>
-
-              <output>
-                {projectionDistance
-                  .toFixed(2)}
-              </output>
-            </div>
-
-            <input
-              type="range"
-              min="2.25"
-              max="12"
-              step="0.05"
-              value={
-                projectionDistance
-              }
-              onChange={
-                (event) =>
-                  updateProjectionDistance(
-                    Number(
-                      event
-                        .currentTarget
-                        .value
-                    )
-                  )
-              }
-              aria-label="Four-dimensional perspective projection distance"
-            />
-          </label>
-        )}
-
-        {viewMode ===
-          "ORTHOGRAPHIC" && (
-          <p className="cosmos-view-description">
-            W is removed only after the true R⁴ rotation. No fourth-dimensional perspective scaling is applied.
-          </p>
-        )}
-
-        {viewMode ===
-          "SLICE" && (
-          <>
-            <label className="cosmos-slider cosmos-view-control">
-              <div className="cosmos-slider-heading">
-                <span>
-                  SLICE W
-                </span>
-
-                <output>
-                  {sliceW.toFixed(2)}
-                </output>
-              </div>
-
-              <input
-                type="range"
-                min="-2.2"
-                max="2.2"
-                step="0.01"
-                value={
-                  sliceW
-                }
-                onChange={
-                  (event) =>
-                    updateSliceW(
-                      Number(
-                        event
-                          .currentTarget
-                          .value
-                      )
-                    )
-                }
-                aria-label="Four-dimensional W slice position"
-              />
-            </label>
-
-            <p className="cosmos-view-description">
-              Actual intersection of the rotated tesseract with the 3D hyperplane w = {sliceW.toFixed(2)}.
-            </p>
-          </>
-        )}
-
-        <div className="cosmos-control-divider" />
+  if (
+    experience ===
+    "4D_LAB"
+  ) {
+    return (
+      <div className="cosmos-experience-wrapper">
+        <TesseractLab />
 
         <button
           type="button"
-          className="cosmos-reset"
+          className="cosmos-back-home"
           onClick={
-            resetOrientation
+            returnFrom4D
           }
+          aria-label="Return to previous Cosmos Infinity view"
         >
-          RESET 4D ORIENTATION
+          ← BACK TO COSMOS∞
         </button>
-
-        <p className="cosmos-control-note">
-          XW, YW and ZW directly mix visible space with the fourth spatial axis.
-        </p>
-      </section>
-
-      <div className="cosmos-caption">
-        {viewMode ===
-          "PERSPECTIVE" && (
-          <>
-            <span>
-              FOUR-DIMENSIONAL PERSPECTIVE
-            </span>
-
-            <strong>
-              W position is encoded visually while the object is projected into 3D.
-            </strong>
-          </>
-        )}
-
-        {viewMode ===
-          "ORTHOGRAPHIC" && (
-          <>
-            <span>
-              ORTHOGRAPHIC 4D → 3D
-            </span>
-
-            <strong>
-              Color reveals hidden W position even after W is discarded geometrically.
-            </strong>
-          </>
-        )}
-
-        {viewMode ===
-          "SLICE" && (
-          <>
-            <span>
-              TRUE 3D CROSS-SECTION
-            </span>
-
-            <strong>
-              This geometry actually intersects the hyperplane w = {sliceW.toFixed(2)}.
-            </strong>
-          </>
-        )}
       </div>
-    </main>
+    );
+  }
+
+  return (
+    <CosmosHome
+      onOpen4D={
+        open4D
+      }
+      onScrollTo={
+        scrollToSection
+      }
+    />
   );
 }
 
