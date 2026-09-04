@@ -1,4 +1,4 @@
-﻿name: Deploy COSMOS Infinity
+name: Deploy COSMOS Infinity
 
 on:
   push:
@@ -41,6 +41,15 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Typecheck astronomy
+        run: pnpm --filter @cosmos/astronomy typecheck
+
+      - name: Test astronomy
+        run: pnpm --filter @cosmos/astronomy test
+
+      - name: Typecheck renderer
+        run: pnpm --filter @cosmos/renderer typecheck
+
       - name: Test renderer
         run: pnpm --filter @cosmos/renderer test
 
@@ -67,7 +76,6 @@ jobs:
   deploy:
     name: Deploy
     needs: build
-
     runs-on: ubuntu-latest
 
     environment:
@@ -78,4 +86,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
-
