@@ -1,5 +1,7 @@
+@import "./UniverseCameraControls.css";
+
 /* =====================================================================
-   COSMOS∞ — UNIVERSE ENGINE 0.2
+   COSMOS∞ — UNIVERSE ENGINE 0.3
    MOBILE-FIRST SOLAR SYSTEM EXPERIENCE
    ===================================================================== */
 
@@ -23,6 +25,11 @@
   height: 100%;
   background: #000;
   touch-action: none;
+  cursor: grab;
+}
+
+.ue-canvas:active {
+  cursor: grabbing;
 }
 
 .ue-header {
@@ -246,10 +253,6 @@
   }
 }
 
-/* =====================================================================
-   PHONE PORTRAIT — 320 / 360 / 375 / 390 / 412 / 430
-   ===================================================================== */
-
 @media (max-width: 720px) {
   .ue-shell {
     width: 100vw;
@@ -263,7 +266,7 @@
     bottom: auto;
     left: 0;
     width: 100vw;
-    height: min(100vw, 44dvh);
+    height: min(112vw, 50dvh);
   }
 
   .ue-header {
@@ -297,7 +300,7 @@
   .ue-info {
     top: auto;
     right: calc(7px + env(safe-area-inset-right, 0px));
-    bottom: calc(31dvh + 16px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(29dvh + 16px + env(safe-area-inset-bottom, 0px));
     left: calc(7px + env(safe-area-inset-left, 0px));
     width: auto;
     padding: 9px 10px;
@@ -376,7 +379,7 @@
     bottom: calc(6px + env(safe-area-inset-bottom, 0px));
     left: calc(6px + env(safe-area-inset-left, 0px));
     width: auto;
-    max-height: 30dvh;
+    max-height: 28dvh;
     padding: 9px;
     overflow-x: hidden;
     overflow-y: auto;
@@ -443,7 +446,7 @@
 
 @media (max-width: 380px) {
   .ue-canvas {
-    height: min(100vw, 42dvh);
+    height: min(112vw, 47dvh);
   }
 
   .ue-header strong {
@@ -456,7 +459,7 @@
 
   .ue-info {
     right: 5px;
-    bottom: calc(32dvh + 12px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(30dvh + 12px + env(safe-area-inset-bottom, 0px));
     left: 5px;
     padding: 8px;
   }
@@ -488,7 +491,7 @@
   .ue-controls {
     right: 4px;
     left: 4px;
-    max-height: 31dvh;
+    max-height: 29dvh;
     padding: 8px;
   }
 
@@ -512,7 +515,7 @@
 
 @media (max-width: 720px) and (max-height: 700px) and (orientation: portrait) {
   .ue-info {
-    bottom: calc(34dvh + 9px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(33dvh + 9px + env(safe-area-inset-bottom, 0px));
   }
 
   .ue-status {
@@ -520,13 +523,9 @@
   }
 
   .ue-controls {
-    max-height: 33dvh;
+    max-height: 32dvh;
   }
 }
-
-/* =====================================================================
-   PHONE LANDSCAPE
-   ===================================================================== */
 
 @media (max-height: 600px) and (orientation: landscape) {
   .ue-header {
