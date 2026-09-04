@@ -188,6 +188,144 @@
   pointer-events: none;
 }
 
+/* =====================================================================
+   SCALE JOURNEY GLOBAL CONTROLS
+   ===================================================================== */
+
+.universe-scale-node {
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  transition:
+    background 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.universe-scale-node:hover {
+  z-index: 2;
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 0 0 1px rgb(126 219 255 / 0.13),
+    0 18px 42px rgb(0 0 0 / 0.22);
+}
+
+.universe-scale-node:focus-visible {
+  outline: 1px solid rgb(160 230 255 / 0.72);
+  outline-offset: -2px;
+}
+
+.universe-scale-open {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 30px;
+  padding-top: 14px;
+  border-top: 1px solid rgb(255 255 255 / 0.06);
+  color: rgb(189 231 248 / 0.42);
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+  font-size: 0.48rem;
+  letter-spacing: 0.11em;
+}
+
+.universe-scale-node:hover .universe-scale-open {
+  color: rgb(180 232 255 / 0.8);
+}
+
+.cosmos-scale-stepper {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: 60;
+  display: grid;
+  grid-template-columns: 112px 58px 112px;
+  align-items: center;
+  gap: 6px;
+  transform: translateX(-50%);
+  padding: 6px;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 999px;
+  background: rgb(2 8 16 / 0.84);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+}
+
+.cosmos-scale-stepper button,
+.cosmos-scale-stepper span {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+}
+
+.cosmos-scale-stepper button {
+  border: 0;
+  background: rgb(255 255 255 / 0.035);
+  color: rgb(231 246 255 / 0.68);
+  cursor: pointer;
+  font-size: 0.43rem;
+  letter-spacing: 0.08em;
+}
+
+.cosmos-scale-stepper button:hover:not(:disabled) {
+  background: rgb(112 205 255 / 0.09);
+  color: #fff;
+}
+
+.cosmos-scale-stepper button:disabled {
+  cursor: default;
+  opacity: 0.22;
+}
+
+.cosmos-scale-stepper span {
+  color: rgb(196 229 244 / 0.42);
+  font-size: 0.4rem;
+  letter-spacing: 0.08em;
+}
+
+.cosmos-open-universe-engine {
+  position: fixed;
+  right: 28px;
+  top: 82px;
+  z-index: 58;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid rgb(120 216 255 / 0.17);
+  border-radius: 999px;
+  background: rgb(5 12 23 / 0.74);
+  color: rgb(201 237 252 / 0.7);
+  cursor: pointer;
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+  font-size: 0.43rem;
+  letter-spacing: 0.08em;
+}
+
+.cosmos-open-universe-engine:hover {
+  border-color: rgb(135 224 255 / 0.36);
+  color: #fff;
+}
+
+.cosmos-scale-experience .cosmos-back-home {
+  z-index: 62;
+}
+
 @media (max-width: 900px) {
   .cse-info {
     width: min(330px, calc(100vw - 48px));
@@ -200,6 +338,10 @@
 
   .cse-interaction-note {
     display: none;
+  }
+
+  .cosmos-scale-stepper {
+    bottom: 18px;
   }
 }
 
@@ -222,7 +364,7 @@
 
   .cse-info {
     right: calc(7px + env(safe-area-inset-right, 0px));
-    bottom: calc(74px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(122px + env(safe-area-inset-bottom, 0px));
     left: calc(7px + env(safe-area-inset-left, 0px));
     width: auto;
     padding: 11px 12px;
@@ -262,7 +404,7 @@
 
   .cse-camera {
     right: calc(7px + env(safe-area-inset-right, 0px));
-    bottom: calc(7px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(58px + env(safe-area-inset-bottom, 0px));
     left: calc(7px + env(safe-area-inset-left, 0px));
     grid-template-columns: 44px 1fr 44px 84px;
     padding: 5px;
@@ -288,11 +430,47 @@
   .cse-camera .cse-reset {
     font-size: 0.34rem;
   }
+
+  .cosmos-scale-stepper {
+    right: calc(7px + env(safe-area-inset-right, 0px));
+    bottom: calc(7px + env(safe-area-inset-bottom, 0px));
+    left: calc(7px + env(safe-area-inset-left, 0px));
+    grid-template-columns: 1fr 46px 1fr;
+    width: auto;
+    transform: none;
+    padding: 4px;
+    border-radius: 13px;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .cosmos-scale-stepper button,
+  .cosmos-scale-stepper span {
+    min-height: 36px;
+  }
+
+  .cosmos-scale-stepper button {
+    font-size: 0.34rem;
+  }
+
+  .cosmos-open-universe-engine {
+    top: auto;
+    right: 9px;
+    bottom: calc(110px + env(safe-area-inset-bottom, 0px));
+    max-width: 48vw;
+    min-height: 34px;
+    padding-inline: 9px;
+    font-size: 0.31rem;
+  }
+
+  .universe-scale-open {
+    margin-top: 20px;
+  }
 }
 
 @media (max-width: 380px) {
   .cse-info {
-    bottom: calc(68px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(116px + env(safe-area-inset-bottom, 0px));
     padding: 9px 10px;
   }
 
@@ -306,6 +484,10 @@
 
   .cse-camera {
     grid-template-columns: 40px 1fr 40px 72px;
+  }
+
+  .cosmos-scale-stepper button {
+    font-size: 0.31rem;
   }
 }
 
@@ -331,14 +513,26 @@
 
   .cse-camera {
     right: calc(7px + env(safe-area-inset-right, 0px));
+    bottom: calc(52px + env(safe-area-inset-bottom, 0px));
+    left: auto;
+    width: min(360px, 48vw);
+  }
+
+  .cosmos-scale-stepper {
+    right: calc(7px + env(safe-area-inset-right, 0px));
     bottom: calc(7px + env(safe-area-inset-bottom, 0px));
     left: auto;
     width: min(360px, 48vw);
+    transform: none;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .cse-canvas {
     cursor: default;
+  }
+
+  .universe-scale-node {
+    transition: none;
   }
 }
