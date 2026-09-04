@@ -5,8 +5,12 @@ import {
 } from "react";
 
 import {
+  ASTRONOMICAL_UNIT_M,
+  CELESTIAL_BODY_CATALOG,
   EARTH,
   MOON,
+  NEPTUNE,
+  PLANETS,
   SPEED_OF_LIGHT_M_PER_S,
   SUN,
   circularOrbitPosition,
@@ -14,8 +18,15 @@ import {
 } from "@cosmos/astronomy";
 
 import type {
+  CelestialBody,
+  CelestialBodyId
+} from "@cosmos/astronomy";
+
+import type {
+  RenderColor3,
   UniverseCameraState,
-  UniverseRenderScene
+  UniverseRenderScene,
+  UniverseVisualKind
 } from "@cosmos/renderer";
 
 import {
@@ -23,11 +34,6 @@ import {
 } from "@cosmos/renderer/three-universe";
 
 import "./UniverseExplorer.css";
-
-type FocusId =
-  | "sun"
-  | "earth"
-  | "moon";
 
 type ScaleMode =
   | "EXPLORE"
@@ -49,352 +55,479 @@ const ZERO:
 const TIME_SPEEDS =
   Object.freeze({
     PAUSE: 0,
-    DAY_1:
-      86_400,
-    DAY_10:
-      864_000,
-    DAY_30:
-      2_592_000
+    DAY_1: 86_400,
+    DAY_30: 2_592_000,
+    YEAR_1:
+      365.25 * 86_400
   });
+
+const FOCUS_ORDER:
+  readonly CelestialBodyId[] =
+    Object.freeze([
+      "sun",
+      "mercury",
+      "venus",
+      "earth",
+      "moon",
+      "mars",
+      "jupiter",
+      "saturn",
+      "uranus",
+      "neptune"
+    ]);
+
+const BODY_BY_ID =
+  Object.freeze(
+    Object.fromEntries(
+      CELESTIAL_BODY_CATALOG.map(
+        body => [
+          body.id,
+          body
+        ]
+      )
+    ) as Record<
+      CelestialBodyId,
+      CelestialBody
+    >
+  );
+
+const BODY_COLORS:
+  Readonly<
+    Record<
+      CelestialBodyId,
+      RenderColor3
+    >
+  > =
+    Object.freeze({
+      sun: {
+        r: 1,
+        g: 0.72,
+        b: 0.12
+      },
+      mercury: {
+        r: 0.58,
+        g: 0.56,
+        b: 0.53
+      },
+      venus: {
+        r: 0.93,
+        g: 0.68,
+        b: 0.34
+      },
+      earth: {
+        r: 0.12,
+        g: 0.56,
+        b: 1
+      },
+      moon: {
+        r: 0.75,
+        g: 0.78,
+        b: 0.82
+      },
+      mars: {
+        r: 0.86,
+        g: 0.29,
+        b: 0.16
+      },
+      jupiter: {
+        r: 0.82,
+        g: 0.64,
+        b: 0.46
+      },
+      saturn: {
+        r: 0.91,
+        g: 0.78,
+        b: 0.52
+      },
+      uranus: {
+        r: 0.42,
+        g: 0.84,
+        b: 0.88
+      },
+      neptune: {
+        r: 0.18,
+        g: 0.37,
+        b: 0.92
+      }
+    });
+
+const EXPLORE_RADII:
+  Readonly<
+    Record<
+      CelestialBodyId,
+      number
+    >
+  > =
+    Object.freeze({
+      sun: 0.95,
+      mercury: 0.16,
+      venus: 0.27,
+      earth: 0.28,
+      moon: 0.11,
+      mars: 0.21,
+      jupiter: 0.52,
+      saturn: 0.48,
+      uranus: 0.34,
+      neptune: 0.33
+    });
+
+/**
+ * Visual phase offsets prevent the simplified circularized planets from
+ * starting on one straight line. They are deliberately NOT a claim about
+ * the current ephemeris and are labelled as such in the UI.
+ */
+const PHASE_OFFSETS_RAD:
+  Readonly<
+    Record<
+      CelestialBodyId,
+      number
+    >
+  > =
+    Object.freeze({
+      sun: 0,
+      mercury: 0.18,
+      venus: 1.14,
+      earth: 2.08,
+      moon: 0.65,
+      mars: 3.02,
+      jupiter: 4.16,
+      saturn: 5.08,
+      uranus: 0.78,
+      neptune: 2.72
+    });
 
 function subtract(
   first: Position3,
   second: Position3
 ): Position3 {
   return {
-    x:
-      first.x -
-      second.x,
-
-    y:
-      first.y -
-      second.y,
-
-    z:
-      first.z -
-      second.z
+    x: first.x - second.x,
+    y: first.y - second.y,
+    z: first.z - second.z
   };
 }
 
-function exploreDistance(
+function explorePlanetOrbit(
   meters: number
 ): number {
-  return (
-    1.7 *
-    Math.log10(
-      1 +
-      meters /
-      1_000_000
-    )
-  );
+  const distanceAu =
+    meters /
+    ASTRONOMICAL_UNIT_M;
+
+  return 2.4 +
+    2.5 *
+    Math.sqrt(distanceAu);
 }
 
-function radiusForBody(
-  id: FocusId,
-  physicalRadiusM: number,
+function exploreMoonOrbit(
+  focus: CelestialBodyId
+): number {
+  return focus === "earth" ||
+    focus === "moon"
+    ? 1.2
+    : 0.34;
+}
+
+function linearScaleForFocus(
+  focus: CelestialBodyId
+): number {
+  if (
+    focus === "sun"
+  ) {
+    return 16 /
+      NEPTUNE.meanOrbitDistanceM!;
+  }
+
+  if (
+    focus === "earth" ||
+    focus === "moon"
+  ) {
+    return 5 /
+      MOON.meanOrbitDistanceM!;
+  }
+
+  return 0.4 /
+    BODY_BY_ID[focus]
+      .radiusM;
+}
+
+function renderRadius(
+  body: CelestialBody,
   mode: ScaleMode,
   linearScale: number
 ): number {
-  if (
-    mode ===
-    "TRUE"
-  ) {
-    return (
-      physicalRadiusM *
+  return mode === "TRUE"
+    ? body.radiusM *
       linearScale
-    );
+    : EXPLORE_RADII[
+        body.id
+      ];
+}
+
+function visualKind(
+  body: CelestialBody
+): UniverseVisualKind {
+  if (
+    body.kind ===
+    "natural-satellite"
+  ) {
+    return "moon";
   }
 
-  switch (id) {
-    case "sun":
-      return 1.05;
+  return body.kind;
+}
 
-    case "earth":
-      return 0.42;
-
-    case "moon":
-      return 0.25;
+function cameraForFocus(
+  focus: CelestialBodyId,
+  mode: ScaleMode
+): UniverseCameraState {
+  if (
+    focus === "sun"
+  ) {
+    return {
+      position: {
+        x: 0,
+        y: 15,
+        z: 32
+      },
+      target: ZERO
+    };
   }
+
+  if (
+    mode === "TRUE" &&
+    (
+      focus === "earth" ||
+      focus === "moon"
+    )
+  ) {
+    return {
+      position: {
+        x: 0,
+        y: 5,
+        z: 13
+      },
+      target: ZERO
+    };
+  }
+
+  return {
+    position: {
+      x: 0,
+      y: 2.4,
+      z: 7.2
+    },
+    target: ZERO
+  };
 }
 
 function buildUniverseScene(
   elapsedS: number,
-  focus: FocusId,
+  focus: CelestialBodyId,
   mode: ScaleMode
 ): {
   readonly scene:
     UniverseRenderScene;
-
   readonly camera:
     UniverseCameraState;
 } {
-  const earthPhysical =
-    circularOrbitPosition(
-      EARTH
-        .meanOrbitDistanceM!,
-      EARTH
-        .orbitalPeriodS!,
-      elapsedS
-    );
-
-  const moonPhysicalLocal =
-    circularOrbitPosition(
-      MOON
-        .meanOrbitDistanceM!,
-      MOON
-        .orbitalPeriodS!,
-      elapsedS,
-      0.65
-    );
-
   const linearScale =
-    mode ===
-    "TRUE"
-      ? (
-          focus === "sun"
-            ? 10 /
-              EARTH
-                .meanOrbitDistanceM!
-            : 5 /
-              MOON
-                .meanOrbitDistanceM!
+    mode === "TRUE"
+      ? linearScaleForFocus(
+          focus
         )
       : 1;
 
-  const earthOrbitRadius =
-    mode ===
-    "TRUE"
-      ? EARTH
-          .meanOrbitDistanceM! *
-        linearScale
-      : exploreDistance(
-          EARTH
-            .meanOrbitDistanceM!
-        );
+  const positions =
+    new Map<
+      CelestialBodyId,
+      Position3
+    >();
+
+  const orbitRadii =
+    new Map<
+      CelestialBodyId,
+      number
+    >();
+
+  positions.set(
+    "sun",
+    ZERO
+  );
+
+  for (
+    const planet of PLANETS
+  ) {
+    const orbitRadius =
+      mode === "TRUE"
+        ? planet
+            .meanOrbitDistanceM! *
+          linearScale
+        : explorePlanetOrbit(
+            planet
+              .meanOrbitDistanceM!
+          );
+
+    orbitRadii.set(
+      planet.id,
+      orbitRadius
+    );
+
+    const position =
+      circularOrbitPosition(
+        orbitRadius,
+        planet.orbitalPeriodS!,
+        elapsedS,
+        PHASE_OFFSETS_RAD[
+          planet.id
+        ]
+      );
+
+    positions.set(
+      planet.id,
+      {
+        x: position.xM,
+        y: 0,
+        z: position.zM
+      }
+    );
+  }
+
+  const earthPosition =
+    positions.get("earth")!;
 
   const moonOrbitRadius =
-    mode ===
-    "TRUE"
-      ? MOON
-          .meanOrbitDistanceM! *
+    mode === "TRUE"
+      ? MOON.meanOrbitDistanceM! *
         linearScale
-      : exploreDistance(
-          MOON
-            .meanOrbitDistanceM!
+      : exploreMoonOrbit(
+          focus
         );
 
-  const sunPosition:
-    Position3 =
-      ZERO;
+  orbitRadii.set(
+    "moon",
+    moonOrbitRadius
+  );
 
-  const earthPosition:
-    Position3 = {
-      x:
-        Math.cos(
-          Math.atan2(
-            earthPhysical.zM,
-            earthPhysical.xM
-          )
-        ) *
-        earthOrbitRadius,
+  const moonLocal =
+    circularOrbitPosition(
+      moonOrbitRadius,
+      MOON.orbitalPeriodS!,
+      elapsedS,
+      PHASE_OFFSETS_RAD.moon
+    );
 
-      y: 0,
-
-      z:
-        Math.sin(
-          Math.atan2(
-            earthPhysical.zM,
-            earthPhysical.xM
-          )
-        ) *
-        earthOrbitRadius
-    };
-
-  const moonPosition:
-    Position3 = {
+  positions.set(
+    "moon",
+    {
       x:
         earthPosition.x +
-        Math.cos(
-          Math.atan2(
-            moonPhysicalLocal.zM,
-            moonPhysicalLocal.xM
-          )
-        ) *
-        moonOrbitRadius,
-
+        moonLocal.xM,
       y: 0,
-
       z:
         earthPosition.z +
-        Math.sin(
-          Math.atan2(
-            moonPhysicalLocal.zM,
-            moonPhysicalLocal.xM
-          )
-        ) *
-        moonOrbitRadius
-    };
+        moonLocal.zM
+    }
+  );
 
   const focusPosition =
-    focus === "sun"
-      ? sunPosition
-      : focus === "earth"
-        ? earthPosition
-        : moonPosition;
+    positions.get(focus) ??
+    ZERO;
+
+  const renderPosition = (
+    id: CelestialBodyId
+  ): Position3 =>
+    subtract(
+      positions.get(id) ??
+        ZERO,
+      focusPosition
+    );
 
   const sunRender =
-    subtract(
-      sunPosition,
-      focusPosition
-    );
+    renderPosition("sun");
 
   const earthRender =
-    subtract(
-      earthPosition,
-      focusPosition
+    renderPosition("earth");
+
+  const bodies =
+    CELESTIAL_BODY_CATALOG.map(
+      body => ({
+        id: body.id,
+        label: body.name,
+        kind:
+          visualKind(body),
+        position:
+          renderPosition(
+            body.id
+          ),
+        radius:
+          renderRadius(
+            body,
+            mode,
+            linearScale
+          ),
+        color:
+          BODY_COLORS[
+            body.id
+          ]
+      })
     );
 
-  const moonRender =
-    subtract(
-      moonPosition,
-      focusPosition
+  const planetOrbits =
+    PLANETS.map(
+      planet => ({
+        id:
+          `${planet.id}-orbit`,
+        center: sunRender,
+        radius:
+          orbitRadii.get(
+            planet.id
+          )!,
+        color:
+          BODY_COLORS[
+            planet.id
+          ],
+        opacity:
+          focus === planet.id
+            ? 0.42
+            : focus === "sun"
+              ? 0.18
+              : 0.1
+      })
     );
 
-  const cameraDistance =
-    focus === "sun"
-      ? 20
-      : focus === "earth"
-        ? 12
-        : 10;
+  const moonOrbit =
+    focus === "earth" ||
+    focus === "moon"
+      ? [
+          {
+            id: "moon-orbit",
+            center:
+              earthRender,
+            radius:
+              orbitRadii.get(
+                "moon"
+              )!,
+            color:
+              BODY_COLORS.moon,
+            opacity: 0.45
+          }
+        ]
+      : [];
 
   return {
     scene: {
-      bodies: [
-        {
-          id: "sun",
-          label: "Sun",
-          kind: "star",
-
-          position:
-            sunRender,
-
-          radius:
-            radiusForBody(
-              "sun",
-              SUN.radiusM,
-              mode,
-              linearScale
-            ),
-
-          color: {
-            r: 1,
-            g: 0.72,
-            b: 0.12
-          }
-        },
-        {
-          id: "earth",
-          label: "Earth",
-          kind: "planet",
-
-          position:
-            earthRender,
-
-          radius:
-            radiusForBody(
-              "earth",
-              EARTH.radiusM,
-              mode,
-              linearScale
-            ),
-
-          color: {
-            r: 0.12,
-            g: 0.56,
-            b: 1
-          }
-        },
-        {
-          id: "moon",
-          label: "Moon",
-          kind: "moon",
-
-          position:
-            moonRender,
-
-          radius:
-            radiusForBody(
-              "moon",
-              MOON.radiusM,
-              mode,
-              linearScale
-            ),
-
-          color: {
-            r: 0.75,
-            g: 0.78,
-            b: 0.82
-          }
-        }
-      ],
-
+      bodies,
       orbits: [
-        {
-          id:
-            "earth-orbit",
-
-          center:
-            sunRender,
-
-          radius:
-            earthOrbitRadius,
-
-          color: {
-            r: 0.3,
-            g: 0.45,
-            b: 0.65
-          },
-
-          opacity:
-            0.22
-        },
-        {
-          id:
-            "moon-orbit",
-
-          center:
-            earthRender,
-
-          radius:
-            moonOrbitRadius,
-
-          color: {
-            r: 0.55,
-            g: 0.65,
-            b: 0.78
-          },
-
-          opacity:
-            0.28
-        }
+        ...planetOrbits,
+        ...moonOrbit
       ]
     },
-
-    camera: {
-      position: {
-        x: 0,
-        y:
-          focus === "sun"
-            ? 6
-            : 4,
-
-        z:
-          cameraDistance
-      },
-
-      target:
-        ZERO
-    }
+    camera:
+      cameraForFocus(
+        focus,
+        mode
+      )
   };
 }
 
@@ -412,6 +545,64 @@ function formatKm(
   );
 }
 
+function formatMass(
+  kilograms: number
+): string {
+  return kilograms
+    .toExponential(3)
+    .replace("e+", "e");
+}
+
+function formatOrbitScale(
+  body: CelestialBody
+): string {
+  if (
+    body.meanOrbitDistanceM ===
+    null
+  ) {
+    return "—";
+  }
+
+  if (
+    body.id === "moon"
+  ) {
+    return `${formatKm(
+      body.meanOrbitDistanceM
+    )} km`;
+  }
+
+  return `${(
+    body.meanOrbitDistanceM /
+    ASTRONOMICAL_UNIT_M
+  ).toFixed(3)} AU`;
+}
+
+function formatPeriod(
+  body: CelestialBody
+): string {
+  if (
+    body.orbitalPeriodS ===
+    null
+  ) {
+    return "—";
+  }
+
+  const days =
+    body.orbitalPeriodS /
+    86_400;
+
+  if (
+    days >= 730
+  ) {
+    return `${(
+      days /
+      365.25
+    ).toFixed(2)} y`;
+  }
+
+  return `${days.toFixed(2)} d`;
+}
+
 function UniverseExplorer() {
   const canvasRef =
     useRef<
@@ -422,7 +613,7 @@ function UniverseExplorer() {
     focus,
     setFocus
   ] =
-    useState<FocusId>(
+    useState<CelestialBodyId>(
       "earth"
     );
 
@@ -449,7 +640,7 @@ function UniverseExplorer() {
     useState(false);
 
   const focusRef =
-    useRef<FocusId>(
+    useRef<CelestialBodyId>(
       "earth"
     );
 
@@ -471,9 +662,7 @@ function UniverseExplorer() {
       focusRef.current =
         focus;
     },
-    [
-      focus
-    ]
+    [focus]
   );
 
   useEffect(
@@ -481,9 +670,7 @@ function UniverseExplorer() {
       scaleModeRef.current =
         scaleMode;
     },
-    [
-      scaleMode
-    ]
+    [scaleMode]
   );
 
   useEffect(
@@ -491,9 +678,7 @@ function UniverseExplorer() {
       speedRef.current =
         speed;
     },
-    [
-      speed
-    ]
+    [speed]
   );
 
   useEffect(
@@ -517,8 +702,7 @@ function UniverseExplorer() {
       let cancelled =
         false;
 
-      let frame =
-        0;
+      let frame = 0;
 
       let observer:
         ResizeObserver | null =
@@ -549,13 +733,11 @@ function UniverseExplorer() {
                   1,
                   rect.width
                 ),
-
               height:
                 Math.max(
                   1,
                   rect.height
                 ),
-
               pixelRatio:
                 window
                   .devicePixelRatio ||
@@ -596,8 +778,7 @@ function UniverseExplorer() {
               0.1
             );
 
-          previous =
-            now;
+          previous = now;
 
           simulationTimeRef.current +=
             delta *
@@ -642,9 +823,7 @@ function UniverseExplorer() {
           );
         }
 
-        observer
-          ?.disconnect();
-
+        observer?.disconnect();
         backend.dispose();
       };
     },
@@ -652,11 +831,14 @@ function UniverseExplorer() {
   );
 
   const body =
-    focus === "sun"
-      ? SUN
-      : focus === "earth"
-        ? EARTH
-        : MOON;
+    BODY_BY_ID[focus];
+
+  const parentName =
+    body.parentId === null
+      ? "—"
+      : BODY_BY_ID[
+          body.parentId
+        ].name;
 
   const lightTime =
     body.meanOrbitDistanceM ===
@@ -672,7 +854,7 @@ function UniverseExplorer() {
       <canvas
         ref={canvasRef}
         className="ue-canvas"
-        aria-label="Interactive Sun Earth Moon universe visualization"
+        aria-label="Interactive Solar System visualization with the Sun, eight planets, and Moon"
       />
 
       <header className="ue-header">
@@ -682,7 +864,7 @@ function UniverseExplorer() {
           </strong>
 
           <span>
-            UNIVERSE ENGINE 0.1
+            UNIVERSE ENGINE 0.2 · SOLAR SYSTEM
           </span>
         </div>
 
@@ -694,14 +876,16 @@ function UniverseExplorer() {
           }
         >
           {live
-            ? "● LIVE"
+            ? "● 8 PLANETS · LIVE"
             : "INITIALIZING"}
         </div>
       </header>
 
       <aside className="ue-info">
         <span className="ue-kicker">
-          FOCUSED BODY
+          {focus === "sun"
+            ? "SOLAR SYSTEM / CENTRAL STAR"
+            : "FOCUSED BODY"}
         </span>
 
         <h1>
@@ -710,110 +894,84 @@ function UniverseExplorer() {
 
         <dl>
           <div>
-            <dt>
-              RADIUS
-            </dt>
-
+            <dt>RADIUS</dt>
             <dd>
               {formatKm(
                 body.radiusM
+              )} km
+            </dd>
+          </div>
+
+          <div>
+            <dt>MASS</dt>
+            <dd>
+              {formatMass(
+                body.massKg
+              )} kg
+            </dd>
+          </div>
+
+          <div>
+            <dt>PARENT</dt>
+            <dd>
+              {parentName}
+            </dd>
+          </div>
+
+          <div>
+            <dt>REFERENCE ORBIT</dt>
+            <dd>
+              {formatOrbitScale(
+                body
               )}
-              {" km"}
             </dd>
           </div>
 
           <div>
-            <dt>
-              PARENT
-            </dt>
-
+            <dt>SIDEREAL PERIOD</dt>
             <dd>
-              {body.parentId ??
-                "—"}
+              {formatPeriod(
+                body
+              )}
             </dd>
           </div>
 
           <div>
-            <dt>
-              MEAN DISTANCE
-            </dt>
-
+            <dt>LIGHT TIME</dt>
             <dd>
-              {body
-                .meanOrbitDistanceM ===
-              null
+              {lightTime === null
                 ? "—"
-                : `${formatKm(
-                    body.meanOrbitDistanceM
-                  )} km`}
-            </dd>
-          </div>
-
-          <div>
-            <dt>
-              ORBITAL PERIOD
-            </dt>
-
-            <dd>
-              {body
-                .orbitalPeriodS ===
-              null
-                ? "—"
-                : `${(
-                    body.orbitalPeriodS /
-                    86_400
-                  ).toFixed(
-                    2
-                  )} days`}
-            </dd>
-          </div>
-
-          <div>
-            <dt>
-              LIGHT TIME
-            </dt>
-
-            <dd>
-              {lightTime ===
-              null
-                ? "—"
-                : lightTime <
-                    60
+                : lightTime < 60
                   ? `${lightTime.toFixed(
                       2
                     )} s`
-                  : `${(
-                      lightTime /
-                      60
-                    ).toFixed(
-                      2
-                    )} min`}
+                  : lightTime < 3_600
+                    ? `${(
+                        lightTime /
+                        60
+                      ).toFixed(2)} min`
+                    : `${(
+                        lightTime /
+                        3_600
+                      ).toFixed(2)} h`}
             </dd>
           </div>
         </dl>
 
         <div className="ue-status">
-          REFERENCE PARAMETER
+          REFERENCE PARAMETERS · NASA / JPL
         </div>
       </aside>
 
       <section className="ue-controls">
         <div className="ue-control-group">
           <span>
-            FOCUS
+            FOCUS · SCROLL FOR ALL BODIES
           </span>
 
-          <div>
-            {(
-              [
-                "sun",
-                "earth",
-                "moon"
-              ] as const
-            ).map(
-              (
-                id
-              ) => (
+          <div className="ue-focus-row">
+            {FOCUS_ORDER.map(
+              id => (
                 <button
                   key={id}
                   type="button"
@@ -822,14 +980,17 @@ function UniverseExplorer() {
                       ? "is-active"
                       : ""
                   }
+                  aria-pressed={
+                    focus === id
+                  }
                   onClick={
                     () =>
-                      setFocus(
-                        id
-                      )
+                      setFocus(id)
                   }
                 >
-                  {id.toUpperCase()}
+                  {BODY_BY_ID[
+                    id
+                  ].name.toUpperCase()}
                 </button>
               )
             )}
@@ -837,11 +998,9 @@ function UniverseExplorer() {
         </div>
 
         <div className="ue-control-group">
-          <span>
-            SCALE
-          </span>
+          <span>SCALE</span>
 
-          <div>
+          <div className="ue-scale-row">
             <button
               type="button"
               className={
@@ -849,6 +1008,10 @@ function UniverseExplorer() {
                 "EXPLORE"
                   ? "is-active"
                   : ""
+              }
+              aria-pressed={
+                scaleMode ===
+                "EXPLORE"
               }
               onClick={
                 () =>
@@ -868,6 +1031,10 @@ function UniverseExplorer() {
                   ? "is-active"
                   : ""
               }
+              aria-pressed={
+                scaleMode ===
+                "TRUE"
+              }
               onClick={
                 () =>
                   setScaleMode(
@@ -881,11 +1048,9 @@ function UniverseExplorer() {
         </div>
 
         <div className="ue-control-group">
-          <span>
-            TIME
-          </span>
+          <span>TIME</span>
 
-          <div>
+          <div className="ue-time-row">
             <button
               type="button"
               className={
@@ -923,24 +1088,6 @@ function UniverseExplorer() {
               type="button"
               className={
                 speed ===
-                TIME_SPEEDS.DAY_10
-                  ? "is-active"
-                  : ""
-              }
-              onClick={
-                () =>
-                  setSpeed(
-                    TIME_SPEEDS.DAY_10
-                  )
-              }
-            >
-              10 D/S
-            </button>
-
-            <button
-              type="button"
-              className={
-                speed ===
                 TIME_SPEEDS.DAY_30
                   ? "is-active"
                   : ""
@@ -954,18 +1101,35 @@ function UniverseExplorer() {
             >
               30 D/S
             </button>
+
+            <button
+              type="button"
+              className={
+                speed ===
+                TIME_SPEEDS.YEAR_1
+                  ? "is-active"
+                  : ""
+              }
+              onClick={
+                () =>
+                  setSpeed(
+                    TIME_SPEEDS.YEAR_1
+                  )
+              }
+            >
+              1 Y/S
+            </button>
           </div>
         </div>
 
         <p>
-          {scaleMode ===
-          "EXPLORE"
-            ? "VISUAL SCALE ENHANCEMENT — distances and body sizes are transformed for visibility."
-            : "TRUE SCALE — one linear physical scale. Small bodies may become difficult to see."}
+          {scaleMode === "EXPLORE"
+            ? "VISUAL SCALE ENHANCEMENT — orbital ordering is preserved while radii and distances are transformed for visibility."
+            : "TRUE LINEAR SCALE — radii and orbital distances share one physical scale. Small bodies may become sub-pixel."}
         </p>
 
         <small>
-          CIRCULAR ORBIT APPROXIMATION · ARTISTIC BODY COLOR
+          CIRCULARIZED REFERENCE ORBITS · VISUAL PHASE OFFSETS · NOT A CURRENT EPHEMERIS · ARTISTIC BODY COLOR
         </small>
       </section>
     </main>

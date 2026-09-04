@@ -1,7 +1,14 @@
-﻿export type CelestialBodyId =
+export type CelestialBodyId =
   | "sun"
+  | "mercury"
+  | "venus"
   | "earth"
-  | "moon";
+  | "moon"
+  | "mars"
+  | "jupiter"
+  | "saturn"
+  | "uranus"
+  | "neptune";
 
 export type CelestialBodyKind =
   | "star"
@@ -12,13 +19,6 @@ export type CelestialBodyParentId =
   | CelestialBodyId
   | null;
 
-/**
- * Source classification for the numerical parameter set.
- *
- * This is intentionally separate from COSMOS∞'s higher-level
- * scientific-honesty taxonomy. Later scenes can independently label
- * observed facts, models, extrapolations and speculative content.
- */
 export type AstronomyParameterClass =
   | "REFERENCE_PARAMETER"
   | "APPROXIMATION";
@@ -26,51 +26,35 @@ export type AstronomyParameterClass =
 export interface AstronomyProvenance {
   readonly authority: string;
   readonly sourceName: string;
-  readonly parameterClass:
-    AstronomyParameterClass;
+  readonly parameterClass: AstronomyParameterClass;
 }
 
 export interface CelestialBody {
-  readonly id:
-    CelestialBodyId;
+  readonly id: CelestialBodyId;
+  readonly name: string;
+  readonly kind: CelestialBodyKind;
+  readonly parentId: CelestialBodyParentId;
 
-  readonly name:
-    string;
+  /** Representative mean physical radius in metres. */
+  readonly radiusM: number;
 
-  readonly kind:
-    CelestialBodyKind;
-
-  readonly parentId:
-    CelestialBodyParentId;
-
-  /**
-   * Representative physical radius in metres.
-   */
-  readonly radiusM:
-    number;
+  /** Mass in kilograms. */
+  readonly massKg: number;
 
   /**
-   * Mass in kilograms.
-   */
-  readonly massKg:
-    number;
-
-  /**
-   * Representative orbital distance from parent body's centre.
+   * Representative orbital scale from the parent body's centre.
    *
-   * null for the root body of this initial catalog.
-   */
-  readonly meanOrbitDistanceM:
-    number | null;
-
-  /**
-   * Sidereal orbital period in seconds.
+   * For the eight planets the current catalog uses the JPL fitted
+   * semi-major-axis parameter that drives the circularized visual orbit.
+   * For the Moon it uses the representative Earth-Moon mean distance.
    *
-   * null for the catalog root.
+   * This compatibility field will later be superseded by full orbital
+   * elements / ephemerides without changing the renderer boundary.
    */
-  readonly orbitalPeriodS:
-    number | null;
+  readonly meanOrbitDistanceM: number | null;
 
-  readonly provenance:
-    AstronomyProvenance;
+  /** Sidereal orbital period in seconds. */
+  readonly orbitalPeriodS: number | null;
+
+  readonly provenance: AstronomyProvenance;
 }

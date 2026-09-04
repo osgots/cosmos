@@ -1,8 +1,12 @@
-﻿import {
+import {
   ASTRONOMICAL_UNIT_M,
   CELESTIAL_BODY_CATALOG,
   EARTH,
+  JUPITER,
+  MERCURY,
   MOON,
+  NEPTUNE,
+  PLANETS,
   SPEED_OF_LIGHT_M_PER_S,
   SUN
 } from "../src/index";
@@ -39,74 +43,111 @@ describe(
     );
 
     test(
-      "starts with exactly Sun, Earth and Moon",
+      "contains all eight planets in heliocentric order",
       () => {
         expect(
-          CELESTIAL_BODY_CATALOG.map(
-            (
-              body
-            ) =>
-              body.id
+          PLANETS.map(
+            planet =>
+              planet.id
           )
         ).toEqual([
-          "sun",
+          "mercury",
+          "venus",
           "earth",
-          "moon"
+          "mars",
+          "jupiter",
+          "saturn",
+          "uranus",
+          "neptune"
         ]);
       }
     );
 
     test(
-      "has correct hierarchy",
+      "catalog contains Sun, eight planets and Moon",
+      () => {
+        expect(
+          CELESTIAL_BODY_CATALOG
+        ).toHaveLength(10);
+      }
+    );
+
+    test(
+      "catalog IDs are unique",
+      () => {
+        const ids =
+          CELESTIAL_BODY_CATALOG.map(
+            body =>
+              body.id
+          );
+
+        expect(
+          new Set(ids).size
+        ).toBe(ids.length);
+      }
+    );
+
+    test(
+      "preserves the Solar System hierarchy",
       () => {
         expect(
           SUN.parentId
         ).toBeNull();
 
-        expect(
-          EARTH.parentId
-        ).toBe(
-          "sun"
-        );
+        for (
+          const planet of PLANETS
+        ) {
+          expect(
+            planet.parentId
+          ).toBe("sun");
+        }
 
         expect(
           MOON.parentId
-        ).toBe(
-          "earth"
-        );
+        ).toBe("earth");
       }
     );
 
     test(
-      "preserves physical size ordering",
+      "planetary orbital scale increases from Mercury to Neptune",
       () => {
-        expect(
-          SUN.radiusM
-        ).toBeGreaterThan(
-          EARTH.radiusM
-        );
-
-        expect(
-          EARTH.radiusM
-        ).toBeGreaterThan(
-          MOON.radiusM
-        );
+        for (
+          let index = 1;
+          index < PLANETS.length;
+          index += 1
+        ) {
+          expect(
+            PLANETS[index]!
+              .meanOrbitDistanceM!
+          ).toBeGreaterThan(
+            PLANETS[index - 1]!
+              .meanOrbitDistanceM!
+          );
+        }
       }
     );
 
     test(
-      "uses the representative Moon orbital distance",
+      "planetary sidereal periods increase outward",
       () => {
-        expect(
-          MOON.meanOrbitDistanceM
-        ).toBe(
-          384_400_000
-        );
+        for (
+          let index = 1;
+          index < PLANETS.length;
+          index += 1
+        ) {
+          expect(
+            PLANETS[index]!
+              .orbitalPeriodS!
+          ).toBeGreaterThan(
+            PLANETS[index - 1]!
+              .orbitalPeriodS!
+          );
+        }
       }
     );
 
     test(
-      "does not incorrectly define Earth's orbit as exactly one au",
+      "Earth reference orbit remains close to one au but not defined by it",
       () => {
         expect(
           EARTH.meanOrbitDistanceM
@@ -123,8 +164,33 @@ describe(
 
         expect(
           relativeDifference
+        ).toBeLessThan(0.00001);
+      }
+    );
+
+    test(
+      "Mercury is inside Earth while Neptune is beyond 30 au",
+      () => {
+        expect(
+          MERCURY.meanOrbitDistanceM!
         ).toBeLessThan(
-          0.00001
+          EARTH.meanOrbitDistanceM!
+        );
+
+        expect(
+          NEPTUNE.meanOrbitDistanceM! /
+          ASTRONOMICAL_UNIT_M
+        ).toBeGreaterThan(30);
+      }
+    );
+
+    test(
+      "Jupiter is physically larger than Earth",
+      () => {
+        expect(
+          JUPITER.radiusM
+        ).toBeGreaterThan(
+          EARTH.radiusM
         );
       }
     );
@@ -190,23 +256,17 @@ describe(
     );
 
     test(
-      "Earth-Moon light time is approximately 1.28 seconds",
+      "Earth-Moon light time remains approximately 1.28 seconds",
       () => {
         const lightTime =
           MOON.meanOrbitDistanceM! /
           SPEED_OF_LIGHT_M_PER_S;
 
-        expect(
-          lightTime
-        ).toBeGreaterThan(
-          1.28
-        );
+        expect(lightTime)
+          .toBeGreaterThan(1.28);
 
-        expect(
-          lightTime
-        ).toBeLessThan(
-          1.29
-        );
+        expect(lightTime)
+          .toBeLessThan(1.29);
       }
     );
   }
