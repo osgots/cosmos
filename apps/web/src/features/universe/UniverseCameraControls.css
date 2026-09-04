@@ -1,0 +1,170 @@
+.ue-camera-tools {
+  position: absolute;
+  top: 118px;
+  right: 34px;
+  z-index: 12;
+  display: grid;
+  grid-template-columns: 42px minmax(58px, auto) 42px;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 14px;
+  background: rgb(2 8 16 / 0.76);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 16px 42px rgb(0 0 0 / 0.24);
+}
+
+.ue-camera-tools button,
+.ue-camera-tools output {
+  min-height: 38px;
+  border: 1px solid rgb(255 255 255 / 0.08);
+  border-radius: 9px;
+  background: rgb(255 255 255 / 0.025);
+  color: #eef8ff;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.5rem;
+  letter-spacing: 0.07em;
+}
+
+.ue-camera-tools button {
+  cursor: pointer;
+  transition: border-color 140ms ease, background 140ms ease, transform 140ms ease;
+}
+
+.ue-camera-tools button:hover,
+.ue-camera-tools button:focus-visible {
+  border-color: rgb(135 220 255 / 0.34);
+  background: rgb(115 205 255 / 0.08);
+  outline: none;
+}
+
+.ue-camera-tools button:active {
+  transform: scale(0.96);
+}
+
+.ue-camera-tools > button:first-child,
+.ue-camera-tools > button:nth-child(3) {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.ue-camera-tools output {
+  display: grid;
+  place-items: center;
+  padding-inline: 7px;
+  color: rgb(190 235 255 / 0.82);
+}
+
+.ue-camera-wide {
+  grid-column: span 3;
+  min-height: 32px !important;
+}
+
+.ue-gesture-hint {
+  position: absolute;
+  top: 258px;
+  right: 34px;
+  z-index: 11;
+  max-width: 230px;
+  padding: 7px 10px;
+  border: 1px solid rgb(255 255 255 / 0.055);
+  border-radius: 999px;
+  background: rgb(0 4 10 / 0.46);
+  color: rgb(222 243 255 / 0.42);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.42rem;
+  line-height: 1.35;
+  letter-spacing: 0.075em;
+  pointer-events: none;
+}
+
+@media (min-width: 721px) and (max-width: 1024px) {
+  .ue-camera-tools {
+    top: 105px;
+    right: 24px;
+  }
+
+  .ue-gesture-hint {
+    top: 245px;
+    right: 24px;
+  }
+}
+
+@media (max-width: 720px) {
+  .ue-camera-tools {
+    top: calc(68px + env(safe-area-inset-top, 0px));
+    right: calc(9px + env(safe-area-inset-right, 0px));
+    grid-template-columns: 34px 48px 34px;
+    gap: 4px;
+    padding: 5px;
+    border-radius: 12px;
+    background: rgb(2 8 16 / 0.86);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  .ue-camera-tools button,
+  .ue-camera-tools output {
+    min-height: 32px;
+    border-radius: 7px;
+    font-size: 0.38rem;
+    letter-spacing: 0.04em;
+  }
+
+  .ue-camera-tools > button:first-child,
+  .ue-camera-tools > button:nth-child(3) {
+    font-size: 0.82rem;
+  }
+
+  .ue-camera-wide {
+    min-height: 28px !important;
+    font-size: 0.32rem !important;
+  }
+
+  .ue-gesture-hint {
+    top: calc(198px + env(safe-area-inset-top, 0px));
+    right: calc(9px + env(safe-area-inset-right, 0px));
+    max-width: 158px;
+    padding: 5px 7px;
+    font-size: 0.31rem;
+    text-align: right;
+  }
+}
+
+@media (max-width: 380px) {
+  .ue-camera-tools {
+    grid-template-columns: 31px 44px 31px;
+  }
+
+  .ue-camera-tools button,
+  .ue-camera-tools output {
+    min-height: 30px;
+  }
+
+  .ue-gesture-hint {
+    display: none;
+  }
+}
+
+@media (max-height: 600px) and (orientation: landscape) {
+  .ue-camera-tools {
+    top: calc(50px + env(safe-area-inset-top, 0px));
+    right: calc(39vw + 12px + env(safe-area-inset-right, 0px));
+    grid-template-columns: 30px 44px 30px;
+  }
+
+  .ue-camera-wide {
+    display: none;
+  }
+
+  .ue-gesture-hint {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ue-camera-tools button {
+    transition: none;
+  }
+}
