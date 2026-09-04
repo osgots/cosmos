@@ -9,6 +9,7 @@ import {
   Group,
   LineBasicMaterial,
   LineLoop,
+  Material,
   Mesh,
   MeshBasicMaterial,
   MeshStandardMaterial,
@@ -53,14 +54,10 @@ interface BodyNode {
   readonly surfaceMaterial:
     MeshBasicMaterial |
     MeshStandardMaterial;
-  readonly ringGroup:
-    Group | null;
-  readonly atmosphere:
-    Mesh | null;
-  readonly halo:
-    Sprite | null;
-  readonly preset:
-    UniverseSurfacePreset;
+  readonly ringGroup: Group | null;
+  readonly atmosphere: Mesh | null;
+  readonly halo: Sprite | null;
+  readonly preset: UniverseSurfacePreset;
 }
 
 function colorFrom(
@@ -75,6 +72,20 @@ function colorFrom(
     color.g,
     color.b
   );
+}
+
+function disposeMaterial(
+  material: Material | Material[]
+): void {
+  if (Array.isArray(material)) {
+    for (const entry of material) {
+      entry.dispose();
+    }
+
+    return;
+  }
+
+  material.dispose();
 }
 
 function inferPreset(
@@ -198,8 +209,7 @@ function defaultAtmosphere(
 }
 
 export class ThreeUniverseBackend {
-  private readonly scene =
-    new Scene();
+  private readonly scene = new Scene();
 
   private readonly camera =
     new PerspectiveCamera(
@@ -213,16 +223,11 @@ export class ThreeUniverseBackend {
     new SphereGeometry(
       1,
       BODY_SEGMENTS,
-      Math.floor(
-        BODY_SEGMENTS / 2
-      )
+      BODY_SEGMENTS / 2
     );
 
   private readonly bodyNodes =
-    new Map<
-      string,
-      BodyNode
-    >();
+    new Map<string, BodyNode>();
 
   private readonly orbitLines =
     new Map<
@@ -258,12 +263,15 @@ export class ThreeUniverseBackend {
   private readonly haloTexture =
     createRadialHaloTexture();
 
-  private readonly starfield =
-    this.createStarfield();
+  private readonly starfield:
+    Points<
+      BufferGeometry,
+      PointsMaterial
+    > =
+      this.createStarfield();
 
   private renderer:
-    WebGPURenderer | null =
-      null;
+    WebGPURenderer | null = null;
 
   public constructor() {
     this.scene.background =
@@ -348,13 +356,8 @@ export class ThreeUniverseBackend {
     const renderer =
       this.requireRenderer();
 
-    this.updateBodies(
-      snapshot.bodies
-    );
-
-    this.updateOrbits(
-      snapshot.orbits
-    );
+    this.updateBodies(snapshot.bodies);
+    this.updateOrbits(snapshot.orbits);
 
     this.camera.position.set(
       cameraState.position.x,
@@ -402,11 +405,8 @@ export class ThreeUniverseBackend {
   private createBodyNode(
     body: UniverseRenderBody
   ): BodyNode {
-    const preset =
-      inferPreset(body);
-
-    const texture =
-      this.textureFor(preset);
+    const preset = inferPreset(body);
+    const texture = this.textureFor(preset);
 
     const surfaceMaterial =
       preset === "sun"
@@ -418,11 +418,9 @@ export class ThreeUniverseBackend {
             map: texture,
             color: 0xffffff,
             roughness:
-              body.roughness ??
-              0.9,
+              body.roughness ?? 0.9,
             metalness:
-              body.metalness ??
-              0
+              body.metalness ?? 0
           });
 
     const surface =
@@ -433,9 +431,7 @@ export class ThreeUniverseBackend {
 
     surface.frustumCulled = false;
 
-    const group =
-      new Group();
-
+    const group = new Group();
     group.add(surface);
 
     const ringVisual =
@@ -457,8 +453,7 @@ export class ThreeUniverseBackend {
       body.atmosphere ??
       defaultAtmosphere(preset);
 
-    let atmosphere:
-      Mesh | null = null;
+    let atmosphere: Mesh | null = null;
 
     if (atmosphereVisual !== undefined) {
       const material =
@@ -493,14 +488,12 @@ export class ThreeUniverseBackend {
       body.halo ??
       defaultHalo(preset);
 
-    let halo:
-      Sprite | null = null;
+    let halo: Sprite | null = null;
 
     if (haloVisual !== undefined) {
       const material =
         new SpriteMaterial({
-          map:
-            this.haloTexture,
+          map: this.haloTexture,
           color:
             colorFrom(
               haloVisual.color
@@ -508,13 +501,23 @@ export class ThreeUniverseBackend {
           transparent: true,
           opacity:
             haloVisual.opacity,
-          blending:
-            AdditiveBlending,
+          blending: AdditiveBlending,
           depthWrite: false
         });
 
       halo = new Sprite(material);
       halo.frustumCulled = false;
+
+      const haloSize =
+        2 *
+        haloVisual.scaleMultiplier;
+
+      halo.scale.set(
+        haloSize,
+        haloSize,
+        1
+      );
+
       group.add(halo);
     }
 
@@ -534,10 +537,9 @@ export class ThreeUniverseBackend {
   private createRingGroup(
     visual: UniverseRingVisual
   ): Group {
-    const group =
-      new Group();
-
+    const group = new Group();
     const ringCount = 9;
+
     const totalWidth =
       visual.outerRadiusMultiplier -
       visual.innerRadiusMultiplier;
@@ -587,7 +589,10 @@ export class ThreeUniverseBackend {
           transparent: true,
           opacity:
             visual.opacity *
-            (0.48 + index / ringCount * 0.45),
+            (0.48 +
+              index /
+                ringCount *
+                0.45),
           side: DoubleSide,
           depthWrite: false
         });
@@ -639,9 +644,7 @@ export class ThreeUniverseBackend {
         continue;
       }
 
-      const preset =
-        inferPreset(body);
-
+      const preset = inferPreset(body);
       let node =
         this.bodyNodes.get(body.id);
 
@@ -653,8 +656,7 @@ export class ThreeUniverseBackend {
           this.disposeBodyNode(node);
         }
 
-        node =
-          this.createBodyNode(body);
+        node = this.createBodyNode(body);
 
         this.bodyNodes.set(
           body.id,
@@ -682,24 +684,6 @@ export class ThreeUniverseBackend {
           body.metalness ?? 0;
       }
 
-      if (node.halo !== null) {
-        const haloVisual =
-          body.halo ??
-          defaultHalo(preset);
-
-        if (haloVisual !== undefined) {
-          const haloSize =
-            2 *
-            haloVisual.scaleMultiplier;
-
-          node.halo.scale.set(
-            haloSize,
-            haloSize,
-            1
-          );
-        }
-      }
-
       if (preset === "sun") {
         this.sunLight.position.set(
           body.position.x,
@@ -714,19 +698,12 @@ export class ThreeUniverseBackend {
     node: BodyNode
   ): void {
     this.scene.remove(node.group);
-
     node.surfaceMaterial.dispose();
 
     if (node.atmosphere !== null) {
-      const material =
-        node.atmosphere.material;
-
-      if (
-        material instanceof
-        MeshBasicMaterial
-      ) {
-        material.dispose();
-      }
+      disposeMaterial(
+        node.atmosphere.material
+      );
     }
 
     if (node.halo !== null) {
@@ -740,13 +717,9 @@ export class ThreeUniverseBackend {
       ) {
         if (child instanceof Mesh) {
           child.geometry.dispose();
-
-          if (
-            child.material instanceof
-            MeshBasicMaterial
-          ) {
-            child.material.dispose();
-          }
+          disposeMaterial(
+            child.material
+          );
         }
       }
     }
@@ -820,12 +793,11 @@ export class ThreeUniverseBackend {
       ) {
         const angle =
           index /
-          ORBIT_SEGMENTS *
+            ORBIT_SEGMENTS *
           Math.PI *
           2;
 
-        const offset =
-          index * 3;
+        const offset = index * 3;
 
         positions[offset] =
           orbit.center.x +
@@ -860,8 +832,13 @@ export class ThreeUniverseBackend {
     }
   }
 
-  private createStarfield(): Points {
+  private createStarfield():
+    Points<
+      BufferGeometry,
+      PointsMaterial
+    > {
     const count = 1_200;
+
     const positions =
       new Float32Array(
         count * 3
@@ -870,11 +847,11 @@ export class ThreeUniverseBackend {
     let seed = 0x5f3759df;
 
     const random = (): number => {
-      seed =
-        Math.imul(
-          seed ^ seed >>> 15,
-          1 | seed
-        );
+      seed = Math.imul(
+        seed ^ seed >>> 15,
+        1 | seed
+      );
+
       seed ^=
         seed +
         Math.imul(
@@ -896,8 +873,10 @@ export class ThreeUniverseBackend {
         random() *
         Math.PI *
         2;
+
       const z =
         random() * 2 - 1;
+
       const radial =
         Math.sqrt(
           Math.max(
@@ -905,18 +884,20 @@ export class ThreeUniverseBackend {
             1 - z * z
           )
         );
+
       const distance =
         120 + random() * 260;
 
-      const offset =
-        index * 3;
+      const offset = index * 3;
 
       positions[offset] =
         Math.cos(theta) *
         radial *
         distance;
+
       positions[offset + 1] =
         z * distance;
+
       positions[offset + 2] =
         Math.sin(theta) *
         radial *
@@ -945,7 +926,10 @@ export class ThreeUniverseBackend {
       });
 
     const points =
-      new Points(
+      new Points<
+        BufferGeometry,
+        PointsMaterial
+      >(
         geometry,
         material
       );
@@ -974,7 +958,6 @@ export class ThreeUniverseBackend {
 
     this.bodyNodes.clear();
     this.orbitLines.clear();
-
     this.unitSphere.dispose();
 
     for (
