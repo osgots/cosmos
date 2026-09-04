@@ -1,0 +1,344 @@
+/* =====================================================================
+   COSMOS∞ — COSMIC SCALE ENGINE
+   Full-screen, mobile-first scale visualizations.
+   ===================================================================== */
+
+.cse-shell {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  background: #00030a;
+  color: #eef8ff;
+  overscroll-behavior: none;
+}
+
+.cse-canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  cursor: grab;
+}
+
+.cse-canvas:active {
+  cursor: grabbing;
+}
+
+.cse-header {
+  position: absolute;
+  top: 28px;
+  left: 34px;
+  z-index: 8;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: min(52vw, 520px);
+  pointer-events: none;
+}
+
+.cse-header strong {
+  font-size: 1.08rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+}
+
+.cse-header span,
+.cse-kicker,
+.cse-scale-readout,
+.cse-camera,
+.cse-interaction-note {
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+}
+
+.cse-header span {
+  overflow: hidden;
+  color: rgb(223 242 255 / 0.46);
+  font-size: 0.52rem;
+  letter-spacing: 0.16em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cse-info {
+  position: absolute;
+  left: 34px;
+  bottom: 34px;
+  z-index: 8;
+  width: min(370px, calc(100vw - 68px));
+  padding: 20px;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 20px;
+  background: rgb(2 8 16 / 0.7);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+}
+
+.cse-kicker {
+  display: block;
+  color: rgb(126 219 255 / 0.72);
+  font-size: 0.48rem;
+  letter-spacing: 0.14em;
+}
+
+.cse-info h1 {
+  margin: 9px 0 10px;
+  font-size: clamp(2rem, 4vw, 4rem);
+  font-weight: 560;
+  line-height: 0.96;
+  letter-spacing: -0.04em;
+}
+
+.cse-info p {
+  margin: 0;
+  color: rgb(225 240 250 / 0.58);
+  font-size: 0.84rem;
+  line-height: 1.6;
+}
+
+.cse-scale-readout {
+  display: inline-flex;
+  margin-top: 16px;
+  padding: 7px 9px;
+  border: 1px solid rgb(126 219 255 / 0.16);
+  border-radius: 999px;
+  color: rgb(153 226 255 / 0.78);
+  background: rgb(103 200 255 / 0.04);
+  font-size: 0.46rem;
+  letter-spacing: 0.12em;
+}
+
+.cse-info small {
+  display: block;
+  margin-top: 13px;
+  color: rgb(226 241 250 / 0.38);
+  font-size: 0.67rem;
+  line-height: 1.55;
+}
+
+.cse-camera {
+  position: absolute;
+  right: 34px;
+  bottom: 34px;
+  z-index: 9;
+  display: grid;
+  grid-template-columns: 42px 64px 42px 76px;
+  align-items: center;
+  gap: 5px;
+  padding: 7px;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 15px;
+  background: rgb(2 8 16 / 0.78);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.cse-camera button,
+.cse-camera span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  border-radius: 9px;
+}
+
+.cse-camera button {
+  border: 1px solid rgb(255 255 255 / 0.08);
+  background: rgb(255 255 255 / 0.03);
+  color: #eef8ff;
+  cursor: pointer;
+  font-size: 0.76rem;
+  opacity: 0.7;
+}
+
+.cse-camera button:hover {
+  border-color: rgb(134 220 255 / 0.28);
+  background: rgb(110 204 255 / 0.08);
+  opacity: 1;
+}
+
+.cse-camera span {
+  color: rgb(225 243 255 / 0.58);
+  font-size: 0.49rem;
+  letter-spacing: 0.08em;
+}
+
+.cse-camera .cse-reset {
+  padding-inline: 9px;
+  font-size: 0.42rem;
+  letter-spacing: 0.08em;
+}
+
+.cse-interaction-note {
+  position: absolute;
+  right: 36px;
+  top: 32px;
+  z-index: 8;
+  color: rgb(224 242 255 / 0.28);
+  font-size: 0.43rem;
+  letter-spacing: 0.12em;
+  pointer-events: none;
+}
+
+@media (max-width: 900px) {
+  .cse-info {
+    width: min(330px, calc(100vw - 48px));
+  }
+
+  .cse-camera {
+    right: 24px;
+    bottom: 24px;
+  }
+
+  .cse-interaction-note {
+    display: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .cse-header {
+    top: calc(13px + env(safe-area-inset-top, 0px));
+    left: calc(14px + env(safe-area-inset-left, 0px));
+    max-width: 58vw;
+  }
+
+  .cse-header strong {
+    font-size: 0.86rem;
+    letter-spacing: 0.14em;
+  }
+
+  .cse-header span {
+    font-size: 0.34rem;
+    letter-spacing: 0.08em;
+  }
+
+  .cse-info {
+    right: calc(7px + env(safe-area-inset-right, 0px));
+    bottom: calc(74px + env(safe-area-inset-bottom, 0px));
+    left: calc(7px + env(safe-area-inset-left, 0px));
+    width: auto;
+    padding: 11px 12px;
+    border-radius: 15px;
+    background: rgb(2 8 16 / 0.9);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .cse-kicker {
+    font-size: 0.32rem;
+    letter-spacing: 0.09em;
+  }
+
+  .cse-info h1 {
+    margin: 4px 0 5px;
+    font-size: clamp(1.3rem, 6vw, 1.8rem);
+  }
+
+  .cse-info p {
+    font-size: 0.58rem;
+    line-height: 1.45;
+  }
+
+  .cse-scale-readout {
+    margin-top: 8px;
+    padding: 5px 7px;
+    font-size: 0.29rem;
+    letter-spacing: 0.075em;
+  }
+
+  .cse-info small {
+    margin-top: 7px;
+    font-size: 0.47rem;
+    line-height: 1.42;
+  }
+
+  .cse-camera {
+    right: calc(7px + env(safe-area-inset-right, 0px));
+    bottom: calc(7px + env(safe-area-inset-bottom, 0px));
+    left: calc(7px + env(safe-area-inset-left, 0px));
+    grid-template-columns: 44px 1fr 44px 84px;
+    padding: 5px;
+    border-radius: 13px;
+    background: rgb(2 8 16 / 0.94);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .cse-camera button,
+  .cse-camera span {
+    min-height: 38px;
+  }
+
+  .cse-camera button {
+    font-size: 0.7rem;
+  }
+
+  .cse-camera span {
+    font-size: 0.38rem;
+  }
+
+  .cse-camera .cse-reset {
+    font-size: 0.34rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .cse-info {
+    bottom: calc(68px + env(safe-area-inset-bottom, 0px));
+    padding: 9px 10px;
+  }
+
+  .cse-info p {
+    font-size: 0.53rem;
+  }
+
+  .cse-info small {
+    font-size: 0.42rem;
+  }
+
+  .cse-camera {
+    grid-template-columns: 40px 1fr 40px 72px;
+  }
+}
+
+@media (max-height: 600px) and (orientation: landscape) {
+  .cse-header {
+    top: calc(8px + env(safe-area-inset-top, 0px));
+    left: calc(10px + env(safe-area-inset-left, 0px));
+  }
+
+  .cse-info {
+    top: calc(52px + env(safe-area-inset-top, 0px));
+    right: auto;
+    bottom: auto;
+    left: calc(8px + env(safe-area-inset-left, 0px));
+    width: min(280px, 37vw);
+    max-height: calc(100dvh - 62px - env(safe-area-inset-bottom, 0px));
+    overflow-y: auto;
+  }
+
+  .cse-info h1 {
+    font-size: 1.18rem;
+  }
+
+  .cse-camera {
+    right: calc(7px + env(safe-area-inset-right, 0px));
+    bottom: calc(7px + env(safe-area-inset-bottom, 0px));
+    left: auto;
+    width: min(360px, 48vw);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cse-canvas {
+    cursor: default;
+  }
+}
