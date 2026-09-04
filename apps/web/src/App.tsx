@@ -4,6 +4,14 @@ import {
 } from "react";
 
 import TesseractLab from "./features/dimensions/TesseractLab";
+import CosmicScaleExplorer, {
+  COSMIC_SCALE_STAGES
+} from "./features/scales/CosmicScaleExplorer";
+
+import type {
+  CosmicScaleId
+} from "./features/scales/CosmicScaleExplorer";
+
 import UniverseExplorer from "./features/universe/UniverseExplorer";
 
 import "./App.css";
@@ -12,102 +20,43 @@ import "./mobile.css";
 type CosmosExperience =
   | "HOME"
   | "UNIVERSE"
+  | "SCALE"
   | "4D_LAB";
-
-interface ScaleDestination {
-  readonly id: string;
-  readonly title: string;
-  readonly subtitle: string;
-  readonly status:
-    | "READY"
-    | "FOUNDATION"
-    | "UPCOMING";
-}
-
-const SCALE_DESTINATIONS:
-  readonly ScaleDestination[] = [
-    {
-      id: "human",
-      title: "Human",
-      subtitle: "Begin from the scale you know.",
-      status: "UPCOMING"
-    },
-    {
-      id: "earth",
-      title: "Earth",
-      subtitle: "Our planetary reference frame.",
-      status: "FOUNDATION"
-    },
-    {
-      id: "moon",
-      title: "Moon",
-      subtitle: "Earth's natural satellite.",
-      status: "UPCOMING"
-    },
-    {
-      id: "solar-system",
-      title: "Solar System",
-      subtitle: "From the Sun to the outer frontier.",
-      status: "UPCOMING"
-    },
-    {
-      id: "nearby-stars",
-      title: "Nearby Stars",
-      subtitle: "Enter the local stellar neighborhood.",
-      status: "UPCOMING"
-    },
-    {
-      id: "milky-way",
-      title: "Milky Way",
-      subtitle: "Our galactic structure.",
-      status: "UPCOMING"
-    },
-    {
-      id: "local-group",
-      title: "Local Group",
-      subtitle: "The neighborhood of galaxies around us.",
-      status: "UPCOMING"
-    },
-    {
-      id: "clusters",
-      title: "Galaxy Clusters",
-      subtitle: "Gravity on enormous scales.",
-      status: "UPCOMING"
-    },
-    {
-      id: "superclusters",
-      title: "Superclusters",
-      subtitle: "Structures spanning hundreds of millions of light-years.",
-      status: "UPCOMING"
-    },
-    {
-      id: "cosmic-web",
-      title: "Cosmic Web",
-      subtitle: "Filaments, walls and immense voids.",
-      status: "UPCOMING"
-    },
-    {
-      id: "observable-universe",
-      title: "Observable Universe",
-      subtitle: "The present cosmological horizon.",
-      status: "UPCOMING"
-    },
-    {
-      id: "beyond",
-      title: "Beyond the Horizon",
-      subtitle: "Physics-constrained continuation beyond observation.",
-      status: "UPCOMING"
-    },
-    {
-      id: "infinity",
-      title: "∞",
-      subtitle: "Exploration does not end at the visible universe.",
-      status: "UPCOMING"
-    }
-  ];
 
 const HOME_SCROLL_KEY =
   "cosmos-home-scroll";
+
+function isCosmicScaleId(
+  value: string
+): value is CosmicScaleId {
+  return COSMIC_SCALE_STAGES.some(
+    stage =>
+      stage.id === value
+  );
+}
+
+function scaleFromLocation():
+  CosmicScaleId | null {
+  const prefix =
+    "#/scale/";
+
+  if (
+    !window.location.hash.startsWith(
+      prefix
+    )
+  ) {
+    return null;
+  }
+
+  const value =
+    window.location.hash.slice(
+      prefix.length
+    );
+
+  return isCosmicScaleId(value)
+    ? value
+    : null;
+}
 
 function routeFromLocation():
   CosmosExperience {
@@ -123,6 +72,13 @@ function routeFromLocation():
     "#/4d-lab"
   ) {
     return "4D_LAB";
+  }
+
+  if (
+    scaleFromLocation() !==
+    null
+  ) {
+    return "SCALE";
   }
 
   return "HOME";
@@ -150,18 +106,14 @@ function readHomeScroll():
         HOME_SCROLL_KEY
       );
 
-    if (
-      stored === null
-    ) {
+    if (stored === null) {
       return 0;
     }
 
     const value =
       Number(stored);
 
-    return Number.isFinite(
-      value
-    )
+    return Number.isFinite(value)
       ? Math.max(
           0,
           value
@@ -177,10 +129,6 @@ function restoreHomeScroll():
   const target =
     readHomeScroll();
 
-  /**
-   * Two animation frames ensure the long homepage has been mounted
-   * and laid out before the previous scroll position is restored.
-   */
   requestAnimationFrame(
     () => {
       requestAnimationFrame(
@@ -197,8 +145,10 @@ function restoreHomeScroll():
 }
 
 interface CosmosHomeProps {
-  readonly onOpenUniverse:
-    () => void;
+  readonly onOpenScale:
+    (
+      stageId: CosmicScaleId
+    ) => void;
 
   readonly onOpen4D:
     () => void;
@@ -210,7 +160,7 @@ interface CosmosHomeProps {
 }
 
 function CosmosHome({
-  onOpenUniverse,
+  onOpenScale,
   onOpen4D,
   onScrollTo
 }: CosmosHomeProps) {
@@ -291,10 +241,10 @@ function CosmosHome({
         </h1>
 
         <p>
-          Travel from familiar human scales through
+          Travel continuously from human scale through
           planets, stars, galaxies, the cosmic web and
           the observable universe — then continue beyond
-          the horizon using clearly labelled
+          the horizon only with clearly labelled
           physics-constrained models.
         </p>
 
@@ -303,7 +253,10 @@ function CosmosHome({
             type="button"
             className="universe-primary-button"
             onClick={
-              onOpenUniverse
+              () =>
+                onOpenScale(
+                  "human"
+                )
             }
           >
             BEGIN JOURNEY
@@ -335,7 +288,7 @@ function CosmosHome({
           </span>
 
           <strong>
-            TRUE R⁴ GEOMETRY ACTIVE
+            SCALE ENGINE + TRUE R⁴ GEOMETRY ACTIVE
           </strong>
         </div>
       </section>
@@ -354,25 +307,31 @@ function CosmosHome({
           </h2>
 
           <p>
-            Each level will become an interactive
-            scientific environment rather than a
-            static page.
+            Every level below now opens an interactive
+            scientific environment. Observed structure,
+            modelled structure and extrapolation remain
+            explicitly separated.
           </p>
         </header>
 
         <div className="universe-scale-path">
-          {SCALE_DESTINATIONS.map(
+          {COSMIC_SCALE_STAGES.map(
             (
               destination,
               index
             ) => (
-              <article
+              <button
                 key={
                   destination.id
                 }
+                type="button"
                 className="universe-scale-node"
-                data-status={
-                  destination.status
+                data-status="READY"
+                onClick={
+                  () =>
+                    onOpenScale(
+                      destination.id
+                    )
                 }
               >
                 <div className="universe-scale-index">
@@ -387,8 +346,9 @@ function CosmosHome({
                 <div className="universe-scale-content">
                   <div className="universe-scale-meta">
                     <span>
-                      {
-                        destination.status
+                      READY · {
+                        destination
+                          .scienceStatus
                       }
                     </span>
                   </div>
@@ -404,8 +364,13 @@ function CosmosHome({
                       destination.subtitle
                     }
                   </p>
+
+                  <div className="universe-scale-open">
+                    OPEN SCALE
+                    <b>↗</b>
+                  </div>
                 </div>
-              </article>
+              </button>
             )
           )}
         </div>
@@ -422,10 +387,10 @@ function CosmosHome({
           </h2>
 
           <p>
-            Our first working scientific laboratory
-            performs real four-dimensional rotations,
-            projection and geometric slicing rather
-            than animating a fake 3D cube.
+            Our scientific laboratory performs real
+            four-dimensional rotations, projection and
+            geometric slicing rather than animating a
+            fake 3D cube.
           </p>
         </div>
 
@@ -474,11 +439,7 @@ function CosmosHome({
         <div className="universe-science-grid">
           <article>
             <span>01</span>
-
-            <h3>
-              OBSERVED
-            </h3>
-
+            <h3>OBSERVED</h3>
             <p>
               Directly supported by observational
               evidence.
@@ -487,11 +448,7 @@ function CosmosHome({
 
           <article>
             <span>02</span>
-
-            <h3>
-              ESTABLISHED MODEL
-            </h3>
-
+            <h3>ESTABLISHED MODEL</h3>
             <p>
               Standard scientific models with their
               assumptions exposed.
@@ -500,11 +457,7 @@ function CosmosHome({
 
           <article>
             <span>03</span>
-
-            <h3>
-              EXTRAPOLATED
-            </h3>
-
+            <h3>EXTRAPOLATED</h3>
             <p>
               Physics-constrained continuation where
               observation can no longer reach.
@@ -513,11 +466,7 @@ function CosmosHome({
 
           <article>
             <span>04</span>
-
-            <h3>
-              SPECULATIVE
-            </h3>
-
+            <h3>SPECULATIVE</h3>
             <p>
               Clearly separated from established
               physics and observation.
@@ -549,32 +498,33 @@ function App() {
         routeFromLocation()
     );
 
-  /**
-   * HOME:
-   * normal document scrolling.
-   *
-   * 4D LAB:
-   * lock document scrolling because the WebGPU viewport owns the
-   * complete screen.
-   */
+  const [
+    scaleId,
+    setScaleId
+  ] =
+    useState<CosmicScaleId>(
+      () =>
+        scaleFromLocation() ??
+        "human"
+    );
+
   useEffect(
     () => {
-      const labActive =
-        experience !==
-        "HOME";
+      const experienceActive =
+        experience !== "HOME";
 
       document.documentElement
         .classList
         .toggle(
           "cosmos-lab-active",
-          labActive
+          experienceActive
         );
 
       document.body
         .classList
         .toggle(
           "cosmos-lab-active",
-          labActive
+          experienceActive
         );
 
       return () => {
@@ -591,19 +541,9 @@ function App() {
           );
       };
     },
-    [
-      experience
-    ]
+    [experience]
   );
 
-  /**
-   * Browser Back / Forward support.
-   *
-   * Hash routing is deliberate because the first deployment target is
-   * GitHub Pages. A route such as /4d-lab would return a 404 after a
-   * hard refresh on Pages unless additional fallback infrastructure
-   * were introduced.
-   */
   useEffect(
     () => {
       const previousScrollRestoration =
@@ -616,15 +556,26 @@ function App() {
 
       const handleHistoryNavigation =
         (): void => {
-          const next =
+          const nextExperience =
             routeFromLocation();
 
+          const nextScale =
+            scaleFromLocation();
+
+          if (
+            nextScale !== null
+          ) {
+            setScaleId(
+              nextScale
+            );
+          }
+
           setExperience(
-            next
+            nextExperience
           );
 
           if (
-            next ===
+            nextExperience ===
             "HOME"
           ) {
             restoreHomeScroll();
@@ -660,24 +611,19 @@ function App() {
     []
   );
 
-  function openUniverse():
-    void {
-    saveHomeScroll();
-
+  function pushExperience(
+    hash: string,
+    nextExperience: CosmosExperience,
+    state: Record<string, unknown>
+  ): void {
     window.history.pushState(
-      {
-        cosmosRoute:
-          "universe",
-
-        cosmosFromHome:
-          true
-      },
+      state,
       "",
-      `${window.location.pathname}${window.location.search}#/universe`
+      `${window.location.pathname}${window.location.search}${hash}`
     );
 
     setExperience(
-      "UNIVERSE"
+      nextExperience
     );
 
     window.scrollTo({
@@ -685,36 +631,74 @@ function App() {
       left: 0,
       behavior: "instant"
     });
+  }
+
+  function openUniverse():
+    void {
+    saveHomeScroll();
+
+    pushExperience(
+      "#/universe",
+      "UNIVERSE",
+      {
+        cosmosRoute: "universe",
+        cosmosFromHome: true
+      }
+    );
+  }
+
+  function openScaleFromHome(
+    nextScaleId: CosmicScaleId
+  ): void {
+    saveHomeScroll();
+    setScaleId(
+      nextScaleId
+    );
+
+    pushExperience(
+      `#/scale/${nextScaleId}`,
+      "SCALE",
+      {
+        cosmosRoute:
+          `scale/${nextScaleId}`,
+        cosmosFromHome: true
+      }
+    );
+  }
+
+  function navigateScale(
+    nextScaleId: CosmicScaleId
+  ): void {
+    setScaleId(
+      nextScaleId
+    );
+
+    pushExperience(
+      `#/scale/${nextScaleId}`,
+      "SCALE",
+      {
+        cosmosRoute:
+          `scale/${nextScaleId}`,
+        cosmosFromHome: false
+      }
+    );
   }
 
   function open4D():
     void {
     saveHomeScroll();
 
-    window.history.pushState(
+    pushExperience(
+      "#/4d-lab",
+      "4D_LAB",
       {
-        cosmosRoute:
-          "4d-lab",
-
-        cosmosFromHome:
-          true
-      },
-      "",
-      `${window.location.pathname}${window.location.search}#/4d-lab`
+        cosmosRoute: "4d-lab",
+        cosmosFromHome: true
+      }
     );
-
-    setExperience(
-      "4D_LAB"
-    );
-
-    window.scrollTo({
-      top: 0,
-      left: 0,
-      behavior: "instant"
-    });
   }
 
-  function returnFrom4D():
+  function returnFromExperience():
     void {
     const state =
       window.history.state as
@@ -724,15 +708,6 @@ function App() {
           }
         | null;
 
-    /**
-     * Normal case:
-     *
-     * HOME -> 4D LAB
-     *
-     * Go to the actual previous browser-history entry. This means the
-     * browser Back button and the visible Back button behave
-     * consistently.
-     */
     if (
       state?.cosmosFromHome ===
       true
@@ -741,20 +716,9 @@ function App() {
       return;
     }
 
-    /**
-     * Direct-entry fallback:
-     *
-     * Someone may open or refresh:
-     *
-     *   #/4d-lab
-     *
-     * In that situation we must not send them away from COSMOS∞ when
-     * they press the in-app Back button.
-     */
     window.history.replaceState(
       {
-        cosmosRoute:
-          "home"
+        cosmosRoute: "home"
       },
       "",
       `${window.location.pathname}${window.location.search}#/`
@@ -775,6 +739,22 @@ function App() {
     );
   }
 
+  function returnScaleHome():
+    void {
+    window.history.pushState(
+      {
+        cosmosRoute: "home"
+      },
+      "",
+      `${window.location.pathname}${window.location.search}#/`
+    );
+
+    setExperience(
+      "HOME"
+    );
+    restoreHomeScroll();
+  }
+
   function scrollToSection(
     sectionId: string
   ): void {
@@ -783,13 +763,7 @@ function App() {
         sectionId
       );
 
-    if (
-      section === null
-    ) {
-      return;
-    }
-
-    section.scrollIntoView({
+    section?.scrollIntoView({
       behavior: "smooth",
       block: "start"
     });
@@ -807,7 +781,7 @@ function App() {
           type="button"
           className="cosmos-back-home"
           onClick={
-            returnFrom4D
+            returnFromExperience
           }
           aria-label="Return to Cosmos Infinity"
         >
@@ -829,7 +803,7 @@ function App() {
           type="button"
           className="cosmos-back-home"
           onClick={
-            returnFrom4D
+            returnFromExperience
           }
           aria-label="Return to previous Cosmos Infinity view"
         >
@@ -839,10 +813,139 @@ function App() {
     );
   }
 
+  if (
+    experience ===
+    "SCALE"
+  ) {
+    const stageIndex =
+      COSMIC_SCALE_STAGES.findIndex(
+        stage =>
+          stage.id === scaleId
+      );
+
+    const previousStage =
+      stageIndex > 0
+        ? COSMIC_SCALE_STAGES[
+            stageIndex - 1
+          ]
+        : null;
+
+    const nextStage =
+      stageIndex >= 0 &&
+      stageIndex <
+        COSMIC_SCALE_STAGES.length - 1
+        ? COSMIC_SCALE_STAGES[
+            stageIndex + 1
+          ]
+        : null;
+
+    const useSolarSystemEngine =
+      scaleId === "earth" ||
+      scaleId === "moon" ||
+      scaleId === "solar-system";
+
+    return (
+      <div className="cosmos-experience-wrapper cosmos-scale-experience">
+        {useSolarSystemEngine
+          ? <UniverseExplorer />
+          : (
+              <CosmicScaleExplorer
+                stageId={scaleId}
+              />
+            )}
+
+        <button
+          type="button"
+          className="cosmos-back-home"
+          onClick={
+            returnScaleHome
+          }
+          aria-label="Return to Cosmos Infinity scale journey"
+        >
+          ← BACK TO COSMOS∞
+        </button>
+
+        <nav
+          className="cosmos-scale-stepper"
+          aria-label="Cosmic scale journey navigation"
+        >
+          <button
+            type="button"
+            disabled={
+              previousStage === null
+            }
+            onClick={
+              () => {
+                if (
+                  previousStage !== null
+                ) {
+                  navigateScale(
+                    previousStage.id
+                  );
+                }
+              }
+            }
+          >
+            ← PREVIOUS
+          </button>
+
+          <span>
+            {String(
+              stageIndex + 1
+            ).padStart(
+              2,
+              "0"
+            )}
+            /
+            {String(
+              COSMIC_SCALE_STAGES.length
+            ).padStart(
+              2,
+              "0"
+            )}
+          </span>
+
+          <button
+            type="button"
+            disabled={
+              nextStage === null
+            }
+            onClick={
+              () => {
+                if (
+                  nextStage !== null
+                ) {
+                  navigateScale(
+                    nextStage.id
+                  );
+                }
+              }
+            }
+          >
+            NEXT →
+          </button>
+        </nav>
+
+        {scaleId ===
+          "solar-system" && (
+          <button
+            type="button"
+            className="cosmos-open-universe-engine"
+            onClick={
+              openUniverse
+            }
+          >
+            OPEN DEDICATED SOLAR SYSTEM ENGINE ↗
+          </button>
+        )}
+      </div>
+    );
+  }
+
   return (
     <CosmosHome
-      onOpenUniverse={
-        openUniverse
+      onOpenScale={
+        openScaleFromHome
       }
       onOpen4D={
         open4D
@@ -855,4 +958,3 @@ function App() {
 }
 
 export default App;
-
