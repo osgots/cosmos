@@ -7,12 +7,10 @@ import {
 import {
   ASTRONOMICAL_UNIT_M,
   CELESTIAL_BODY_CATALOG,
-  EARTH,
   MOON,
   NEPTUNE,
   PLANETS,
   SPEED_OF_LIGHT_M_PER_S,
-  SUN,
   circularOrbitPosition,
   lightTravelTimeS
 } from "@cosmos/astronomy";
