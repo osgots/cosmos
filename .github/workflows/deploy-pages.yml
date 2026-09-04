@@ -54,7 +54,7 @@ jobs:
         run: pnpm --filter @cosmos/web exec tsc -b
 
       - name: Build COSMOS Infinity
-        run: pnpm --filter @cosmos/web exec vite build --base=/cosmos-infinity/
+        run: pnpm --filter @cosmos/web exec vite build --base=/cosmos/
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v6
@@ -78,3 +78,4 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
+
