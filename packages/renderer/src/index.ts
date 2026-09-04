@@ -1,4 +1,4 @@
-﻿export type {
+export type {
   RenderPosition3,
   RenderColor3,
   RenderEdge,
@@ -15,9 +15,13 @@ export type {
 } from "./RendererBackend";
 
 export type {
+  UniverseAtmosphereVisual,
   UniverseCameraState,
+  UniverseHaloVisual,
   UniverseRenderBody,
   UniverseRenderOrbit,
   UniverseRenderScene,
+  UniverseRingVisual,
+  UniverseSurfacePreset,
   UniverseVisualKind
 } from "./universeTypes";
