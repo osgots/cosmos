@@ -21,7 +21,6 @@ import type {
 } from "@cosmos/astronomy";
 
 import type {
-  RenderColor3,
   UniverseCameraState,
   UniverseRenderScene,
   UniverseVisualKind
@@ -30,6 +29,21 @@ import type {
 import {
   ThreeUniverseBackend
 } from "@cosmos/renderer/three-universe";
+
+import {
+  BODY_VISUALS
+} from "./visuals/bodyVisualManifest";
+
+import {
+  DEFAULT_UNIVERSE_VIEW,
+  applyUniverseView,
+  clampUniverseZoom,
+  smoothUniverseView
+} from "./universeCameraMath";
+
+import type {
+  UniverseViewState
+} from "./universeCameraMath";
 
 import "./UniverseExplorer.css";
 
@@ -41,6 +55,11 @@ interface Position3 {
   readonly x: number;
   readonly y: number;
   readonly z: number;
+}
+
+interface PointerPosition {
+  readonly x: number;
+  readonly y: number;
 }
 
 const ZERO:
@@ -89,66 +108,6 @@ const BODY_BY_ID =
     >
   );
 
-const BODY_COLORS:
-  Readonly<
-    Record<
-      CelestialBodyId,
-      RenderColor3
-    >
-  > =
-    Object.freeze({
-      sun: {
-        r: 1,
-        g: 0.72,
-        b: 0.12
-      },
-      mercury: {
-        r: 0.58,
-        g: 0.56,
-        b: 0.53
-      },
-      venus: {
-        r: 0.93,
-        g: 0.68,
-        b: 0.34
-      },
-      earth: {
-        r: 0.12,
-        g: 0.56,
-        b: 1
-      },
-      moon: {
-        r: 0.75,
-        g: 0.78,
-        b: 0.82
-      },
-      mars: {
-        r: 0.86,
-        g: 0.29,
-        b: 0.16
-      },
-      jupiter: {
-        r: 0.82,
-        g: 0.64,
-        b: 0.46
-      },
-      saturn: {
-        r: 0.91,
-        g: 0.78,
-        b: 0.52
-      },
-      uranus: {
-        r: 0.42,
-        g: 0.84,
-        b: 0.88
-      },
-      neptune: {
-        r: 0.18,
-        g: 0.37,
-        b: 0.92
-      }
-    });
-
 const EXPLORE_RADII:
   Readonly<
     Record<
@@ -170,9 +129,8 @@ const EXPLORE_RADII:
     });
 
 /**
- * Visual phase offsets prevent the simplified circularized planets from
- * starting on one straight line. They are deliberately NOT a claim about
- * the current ephemeris and are labelled as such in the UI.
+ * Deliberate visual phase offsets used by the circularized approximation.
+ * They are not a current ephemeris and are labelled as such in the UI.
  */
 const PHASE_OFFSETS_RAD:
   Readonly<
@@ -199,9 +157,15 @@ function subtract(
   second: Position3
 ): Position3 {
   return {
-    x: first.x - second.x,
-    y: first.y - second.y,
-    z: first.z - second.z
+    x:
+      first.x -
+      second.x,
+    y:
+      first.y -
+      second.y,
+    z:
+      first.z -
+      second.z
   };
 }
 
@@ -229,9 +193,7 @@ function exploreMoonOrbit(
 function linearScaleForFocus(
   focus: CelestialBodyId
 ): number {
-  if (
-    focus === "sun"
-  ) {
+  if (focus === "sun") {
     return 16 /
       NEPTUNE.meanOrbitDistanceM!;
   }
@@ -279,9 +241,7 @@ function cameraForFocus(
   focus: CelestialBodyId,
   mode: ScaleMode
 ): UniverseCameraState {
-  if (
-    focus === "sun"
-  ) {
+  if (focus === "sun") {
     return {
       position: {
         x: 0,
@@ -449,26 +409,49 @@ function buildUniverseScene(
 
   const bodies =
     CELESTIAL_BODY_CATALOG.map(
-      body => ({
-        id: body.id,
-        label: body.name,
-        kind:
-          visualKind(body),
-        position:
-          renderPosition(
+      body => {
+        const visual =
+          BODY_VISUALS[
             body.id
-          ),
-        radius:
-          renderRadius(
-            body,
-            mode,
-            linearScale
-          ),
-        color:
-          BODY_COLORS[
-            body.id
-          ]
-      })
+          ];
+
+        return {
+          id: body.id,
+          label: body.name,
+          kind:
+            visualKind(body),
+          position:
+            renderPosition(
+              body.id
+            ),
+          radius:
+            renderRadius(
+              body,
+              mode,
+              linearScale
+            ),
+          color:
+            visual.fallbackColor,
+          surfacePreset:
+            visual.surfacePreset,
+          roughness:
+            visual.roughness,
+          metalness:
+            visual.metalness,
+          ring:
+            "ring" in visual
+              ? visual.ring
+              : undefined,
+          halo:
+            "halo" in visual
+              ? visual.halo
+              : undefined,
+          atmosphere:
+            "atmosphere" in visual
+              ? visual.atmosphere
+              : undefined
+        };
+      }
     );
 
   const planetOrbits =
@@ -482,9 +465,9 @@ function buildUniverseScene(
             planet.id
           )!,
         color:
-          BODY_COLORS[
+          BODY_VISUALS[
             planet.id
-          ],
+          ].orbitColor,
         opacity:
           focus === planet.id
             ? 0.42
@@ -507,7 +490,9 @@ function buildUniverseScene(
                 "moon"
               )!,
             color:
-              BODY_COLORS.moon,
+              BODY_VISUALS
+                .moon
+                .orbitColor,
             opacity: 0.45
           }
         ]
@@ -561,9 +546,7 @@ function formatOrbitScale(
     return "—";
   }
 
-  if (
-    body.id === "moon"
-  ) {
+  if (body.id === "moon") {
     return `${formatKm(
       body.meanOrbitDistanceM
     )} km`;
@@ -589,9 +572,7 @@ function formatPeriod(
     body.orbitalPeriodS /
     86_400;
 
-  if (
-    days >= 730
-  ) {
+  if (days >= 730) {
     return `${(
       days /
       365.25
@@ -599,6 +580,16 @@ function formatPeriod(
   }
 
   return `${days.toFixed(2)} d`;
+}
+
+function pointerDistance(
+  first: PointerPosition,
+  second: PointerPosition
+): number {
+  return Math.hypot(
+    second.x - first.x,
+    second.y - first.y
+  );
 }
 
 function UniverseExplorer() {
@@ -637,6 +628,12 @@ function UniverseExplorer() {
   ] =
     useState(false);
 
+  const [
+    zoomPercent,
+    setZoomPercent
+  ] =
+    useState(100);
+
   const focusRef =
     useRef<CelestialBodyId>(
       "earth"
@@ -654,6 +651,90 @@ function UniverseExplorer() {
 
   const simulationTimeRef =
     useRef(0);
+
+  const currentViewRef =
+    useRef<UniverseViewState>({
+      ...DEFAULT_UNIVERSE_VIEW
+    });
+
+  const targetViewRef =
+    useRef<UniverseViewState>({
+      ...DEFAULT_UNIVERSE_VIEW
+    });
+
+  function setTargetView(
+    next: UniverseViewState
+  ): void {
+    const normalized = {
+      zoom:
+        clampUniverseZoom(
+          next.zoom
+        ),
+      panX:
+        Math.max(
+          -18,
+          Math.min(
+            18,
+            next.panX
+          )
+        ),
+      panY:
+        Math.max(
+          -12,
+          Math.min(
+            12,
+            next.panY
+          )
+        )
+    };
+
+    targetViewRef.current =
+      normalized;
+
+    setZoomPercent(
+      Math.round(
+        normalized.zoom *
+        100
+      )
+    );
+  }
+
+  function resetView():
+    void {
+    setTargetView({
+      ...DEFAULT_UNIVERSE_VIEW
+    });
+  }
+
+  function zoomBy(
+    multiplier: number
+  ): void {
+    const target =
+      targetViewRef.current;
+
+    setTargetView({
+      ...target,
+      zoom:
+        target.zoom *
+        multiplier
+    });
+  }
+
+  function focusBody(
+    id: CelestialBodyId
+  ): void {
+    focusRef.current = id;
+    setFocus(id);
+    resetView();
+  }
+
+  function chooseScaleMode(
+    mode: ScaleMode
+  ): void {
+    scaleModeRef.current = mode;
+    setScaleMode(mode);
+    resetView();
+  }
 
   useEffect(
     () => {
@@ -684,9 +765,7 @@ function UniverseExplorer() {
       const canvas =
         canvasRef.current;
 
-      if (
-        canvas === null
-      ) {
+      if (canvas === null) {
         return;
       }
 
@@ -697,14 +776,234 @@ function UniverseExplorer() {
       const backend =
         new ThreeUniverseBackend();
 
-      let cancelled =
-        false;
+      const pointers =
+        new Map<
+          number,
+          PointerPosition
+        >();
 
+      let lastSingle:
+        PointerPosition | null =
+          null;
+
+      let lastPinchDistance:
+        number | null =
+          null;
+
+      let cancelled = false;
       let frame = 0;
 
       let observer:
         ResizeObserver | null =
           null;
+
+      const updateZoom = (
+        multiplier: number
+      ): void => {
+        const target =
+          targetViewRef.current;
+
+        setTargetView({
+          ...target,
+          zoom:
+            target.zoom *
+            multiplier
+        });
+      };
+
+      const handleWheel = (
+        event: WheelEvent
+      ): void => {
+        event.preventDefault();
+
+        updateZoom(
+          Math.exp(
+            -event.deltaY *
+            0.00125
+          )
+        );
+      };
+
+      const handlePointerDown = (
+        event: PointerEvent
+      ): void => {
+        canvasElement.setPointerCapture(
+          event.pointerId
+        );
+
+        pointers.set(
+          event.pointerId,
+          {
+            x: event.clientX,
+            y: event.clientY
+          }
+        );
+
+        if (pointers.size === 1) {
+          lastSingle = {
+            x: event.clientX,
+            y: event.clientY
+          };
+        }
+
+        if (pointers.size === 2) {
+          const active =
+            Array.from(
+              pointers.values()
+            );
+
+          lastPinchDistance =
+            pointerDistance(
+              active[0]!,
+              active[1]!
+            );
+        }
+      };
+
+      const handlePointerMove = (
+        event: PointerEvent
+      ): void => {
+        if (
+          !pointers.has(
+            event.pointerId
+          )
+        ) {
+          return;
+        }
+
+        const next = {
+          x: event.clientX,
+          y: event.clientY
+        };
+
+        pointers.set(
+          event.pointerId,
+          next
+        );
+
+        if (
+          pointers.size === 1 &&
+          lastSingle !== null
+        ) {
+          const deltaX =
+            next.x -
+            lastSingle.x;
+
+          const deltaY =
+            next.y -
+            lastSingle.y;
+
+          const target =
+            targetViewRef.current;
+
+          const sensitivity =
+            0.011 /
+            Math.max(
+              0.5,
+              target.zoom
+            );
+
+          setTargetView({
+            ...target,
+            panX:
+              target.panX -
+              deltaX * sensitivity,
+            panY:
+              target.panY +
+              deltaY * sensitivity
+          });
+
+          lastSingle = next;
+          return;
+        }
+
+        if (pointers.size >= 2) {
+          const active =
+            Array.from(
+              pointers.values()
+            );
+
+          const distance =
+            pointerDistance(
+              active[0]!,
+              active[1]!
+            );
+
+          if (
+            lastPinchDistance !== null &&
+            lastPinchDistance > 0
+          ) {
+            updateZoom(
+              distance /
+              lastPinchDistance
+            );
+          }
+
+          lastPinchDistance =
+            distance;
+        }
+      };
+
+      const releasePointer = (
+        event: PointerEvent
+      ): void => {
+        pointers.delete(
+          event.pointerId
+        );
+
+        if (
+          canvasElement.hasPointerCapture(
+            event.pointerId
+          )
+        ) {
+          canvasElement.releasePointerCapture(
+            event.pointerId
+          );
+        }
+
+        if (pointers.size < 2) {
+          lastPinchDistance = null;
+        }
+
+        if (pointers.size === 1) {
+          lastSingle =
+            Array.from(
+              pointers.values()
+            )[0] ?? null;
+        } else if (
+          pointers.size === 0
+        ) {
+          lastSingle = null;
+        }
+      };
+
+      canvasElement.addEventListener(
+        "wheel",
+        handleWheel,
+        {
+          passive: false
+        }
+      );
+
+      canvasElement.addEventListener(
+        "pointerdown",
+        handlePointerDown
+      );
+
+      canvasElement.addEventListener(
+        "pointermove",
+        handlePointerMove
+      );
+
+      canvasElement.addEventListener(
+        "pointerup",
+        releasePointer
+      );
+
+      canvasElement.addEventListener(
+        "pointercancel",
+        releasePointer
+      );
 
       async function start():
         Promise<void> {
@@ -712,9 +1011,7 @@ function UniverseExplorer() {
           canvasElement
         );
 
-        if (
-          cancelled
-        ) {
+        if (cancelled) {
           backend.dispose();
           return;
         }
@@ -760,17 +1057,14 @@ function UniverseExplorer() {
         const draw = (
           now: number
         ): void => {
-          if (
-            cancelled
-          ) {
+          if (cancelled) {
             return;
           }
 
           const delta =
             Math.min(
               (
-                now -
-                previous
+                now - previous
               ) /
                 1_000,
               0.1
@@ -782,6 +1076,13 @@ function UniverseExplorer() {
             delta *
             speedRef.current;
 
+          currentViewRef.current =
+            smoothUniverseView(
+              currentViewRef.current,
+              targetViewRef.current,
+              delta
+            );
+
           const snapshot =
             buildUniverseScene(
               simulationTimeRef.current,
@@ -791,7 +1092,10 @@ function UniverseExplorer() {
 
           backend.render(
             snapshot.scene,
-            snapshot.camera
+            applyUniverseView(
+              snapshot.camera,
+              currentViewRef.current
+            )
           );
 
           frame =
@@ -813,15 +1117,39 @@ function UniverseExplorer() {
       return () => {
         cancelled = true;
 
-        if (
-          frame !== 0
-        ) {
+        if (frame !== 0) {
           cancelAnimationFrame(
             frame
           );
         }
 
         observer?.disconnect();
+
+        canvasElement.removeEventListener(
+          "wheel",
+          handleWheel
+        );
+
+        canvasElement.removeEventListener(
+          "pointerdown",
+          handlePointerDown
+        );
+
+        canvasElement.removeEventListener(
+          "pointermove",
+          handlePointerMove
+        );
+
+        canvasElement.removeEventListener(
+          "pointerup",
+          releasePointer
+        );
+
+        canvasElement.removeEventListener(
+          "pointercancel",
+          releasePointer
+        );
+
         backend.dispose();
       };
     },
@@ -852,7 +1180,7 @@ function UniverseExplorer() {
       <canvas
         ref={canvasRef}
         className="ue-canvas"
-        aria-label="Interactive Solar System visualization with the Sun, eight planets, and Moon"
+        aria-label="Interactive Solar System visualization with wheel and pinch zoom"
       />
 
       <header className="ue-header">
@@ -862,7 +1190,7 @@ function UniverseExplorer() {
           </strong>
 
           <span>
-            UNIVERSE ENGINE 0.2 · SOLAR SYSTEM
+            UNIVERSE ENGINE 0.3 · SOLAR SYSTEM
           </span>
         </div>
 
@@ -878,6 +1206,62 @@ function UniverseExplorer() {
             : "INITIALIZING"}
         </div>
       </header>
+
+      <nav
+        className="ue-camera-tools"
+        aria-label="Universe camera controls"
+      >
+        <button
+          type="button"
+          onClick={
+            () =>
+              zoomBy(0.74)
+          }
+          aria-label="Zoom out"
+        >
+          −
+        </button>
+
+        <output
+          aria-label="Current zoom"
+        >
+          {zoomPercent}%
+        </output>
+
+        <button
+          type="button"
+          onClick={
+            () =>
+              zoomBy(1.35)
+          }
+          aria-label="Zoom in"
+        >
+          +
+        </button>
+
+        <button
+          type="button"
+          className="ue-camera-wide"
+          onClick={resetView}
+        >
+          RESET
+        </button>
+
+        <button
+          type="button"
+          className="ue-camera-wide"
+          onClick={
+            () =>
+              focusBody("sun")
+          }
+        >
+          CENTER SUN
+        </button>
+      </nav>
+
+      <div className="ue-gesture-hint">
+        WHEEL / PINCH TO ZOOM · DRAG TO PAN
+      </div>
 
       <aside className="ue-info">
         <span className="ue-kicker">
@@ -983,7 +1367,7 @@ function UniverseExplorer() {
                   }
                   onClick={
                     () =>
-                      setFocus(id)
+                      focusBody(id)
                   }
                 >
                   {BODY_BY_ID[
@@ -1013,7 +1397,7 @@ function UniverseExplorer() {
               }
               onClick={
                 () =>
-                  setScaleMode(
+                  chooseScaleMode(
                     "EXPLORE"
                   )
               }
@@ -1035,7 +1419,7 @@ function UniverseExplorer() {
               }
               onClick={
                 () =>
-                  setScaleMode(
+                  chooseScaleMode(
                     "TRUE"
                   )
               }
@@ -1127,7 +1511,7 @@ function UniverseExplorer() {
         </p>
 
         <small>
-          CIRCULARIZED REFERENCE ORBITS · VISUAL PHASE OFFSETS · NOT A CURRENT EPHEMERIS · ARTISTIC BODY COLOR
+          PROCEDURAL SURFACE VISUALIZATION · CIRCULARIZED REFERENCE ORBITS · VISUAL PHASE OFFSETS · NOT A CURRENT EPHEMERIS
         </small>
       </section>
     </main>
