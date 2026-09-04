@@ -7,8 +7,14 @@ import type {
   UniverseSurfacePreset
 } from "../universeTypes";
 
-const WIDTH = 768;
-const HEIGHT = 384;
+const WIDTH = 1_024;
+const HEIGHT = 512;
+
+type LonLat =
+  readonly [
+    longitude: number,
+    latitude: number
+  ];
 
 function mulberry32(
   seed: number
@@ -25,7 +31,8 @@ function mulberry32(
       result | 1
     );
 
-    result ^= result +
+    result ^=
+      result +
       Math.imul(
         result ^ result >>> 7,
         result | 61
@@ -54,6 +61,73 @@ function requireContext(
   return context;
 }
 
+function projectLonLat(
+  point: LonLat
+): readonly [number, number] {
+  return [
+    (
+      point[0] +
+      180
+    ) /
+      360 *
+      WIDTH,
+    (
+      90 -
+      point[1]
+    ) /
+      180 *
+      HEIGHT
+  ];
+}
+
+function paintPolygon(
+  context: CanvasRenderingContext2D,
+  points: readonly LonLat[],
+  fill: string,
+  stroke?: string
+): void {
+  if (points.length < 3) {
+    return;
+  }
+
+  const first =
+    projectLonLat(
+      points[0]!
+    );
+
+  context.beginPath();
+  context.moveTo(
+    first[0],
+    first[1]
+  );
+
+  for (
+    let index = 1;
+    index < points.length;
+    index += 1
+  ) {
+    const point =
+      projectLonLat(
+        points[index]!
+      );
+
+    context.lineTo(
+      point[0],
+      point[1]
+    );
+  }
+
+  context.closePath();
+  context.fillStyle = fill;
+  context.fill();
+
+  if (stroke !== undefined) {
+    context.strokeStyle = stroke;
+    context.lineWidth = 1.2;
+    context.stroke();
+  }
+}
+
 function addFineNoise(
   context: CanvasRenderingContext2D,
   random: () => number,
@@ -68,11 +142,15 @@ function addFineNoise(
     index += 1
   ) {
     const size =
-      0.8 + random() * 3.4;
+      0.8 +
+      random() * 3.4;
 
     context.globalAlpha =
       maximumAlpha *
-      (0.25 + random() * 0.75);
+      (
+        0.25 +
+        random() * 0.75
+      );
 
     context.fillStyle =
       random() > 0.5
@@ -109,9 +187,18 @@ function paintRockyWorld(
       HEIGHT
     );
 
-  gradient.addColorStop(0, light);
-  gradient.addColorStop(0.45, base);
-  gradient.addColorStop(1, dark);
+  gradient.addColorStop(
+    0,
+    light
+  );
+  gradient.addColorStop(
+    0.45,
+    base
+  );
+  gradient.addColorStop(
+    1,
+    dark
+  );
 
   context.fillStyle = gradient;
   context.fillRect(
@@ -124,7 +211,7 @@ function paintRockyWorld(
   addFineNoise(
     context,
     random,
-    3_200,
+    5_000,
     light,
     dark,
     0.18
@@ -136,13 +223,18 @@ function paintRockyWorld(
     index += 1
   ) {
     const radius =
-      2 + random() * 18;
+      2 +
+      random() * 22;
 
-    const x = random() * WIDTH;
-    const y = random() * HEIGHT;
+    const x =
+      random() * WIDTH;
+
+    const y =
+      random() * HEIGHT;
 
     context.globalAlpha =
-      0.08 + random() * 0.14;
+      0.08 +
+      random() * 0.14;
 
     context.fillStyle = dark;
     context.beginPath();
@@ -155,10 +247,13 @@ function paintRockyWorld(
     );
     context.fill();
 
-    context.globalAlpha = 0.11;
+    context.globalAlpha = 0.12;
     context.strokeStyle = light;
     context.lineWidth =
-      Math.max(1, radius * 0.13);
+      Math.max(
+        1,
+        radius * 0.12
+      );
     context.beginPath();
     context.arc(
       x - radius * 0.12,
@@ -185,94 +280,211 @@ function paintEarth(
       HEIGHT
     );
 
-  ocean.addColorStop(0, "#164f82");
-  ocean.addColorStop(0.5, "#0b3767");
-  ocean.addColorStop(1, "#061d45");
+  ocean.addColorStop(
+    0,
+    "#1a5d91"
+  );
+  ocean.addColorStop(
+    0.45,
+    "#0b3d73"
+  );
+  ocean.addColorStop(
+    1,
+    "#061b42"
+  );
 
   context.fillStyle = ocean;
-  context.fillRect(0, 0, WIDTH, HEIGHT);
+  context.fillRect(
+    0,
+    0,
+    WIDTH,
+    HEIGHT
+  );
 
-  const landColors = [
-    "#66894c",
-    "#6f7d3d",
-    "#8b7944",
-    "#496f49",
-    "#9d8b55"
-  ];
+  const landStroke =
+    "rgba(195,205,142,0.45)";
+
+  paintPolygon(
+    context,
+    [
+      [-168, 70],
+      [-145, 66],
+      [-125, 52],
+      [-117, 33],
+      [-102, 23],
+      [-86, 20],
+      [-80, 30],
+      [-67, 45],
+      [-77, 57],
+      [-102, 72],
+      [-138, 72]
+    ],
+    "#607b46",
+    landStroke
+  );
+
+  paintPolygon(
+    context,
+    [
+      [-82, 13],
+      [-70, 8],
+      [-61, -7],
+      [-53, -19],
+      [-58, -38],
+      [-69, -55],
+      [-76, -42],
+      [-80, -20]
+    ],
+    "#6d7f43",
+    landStroke
+  );
+
+  paintPolygon(
+    context,
+    [
+      [-18, 36],
+      [5, 37],
+      [25, 32],
+      [40, 15],
+      [51, 8],
+      [43, -11],
+      [31, -30],
+      [17, -35],
+      [4, -27],
+      [-10, -5]
+    ],
+    "#777b41",
+    landStroke
+  );
+
+  paintPolygon(
+    context,
+    [
+      [-10, 38],
+      [7, 55],
+      [30, 68],
+      [65, 72],
+      [95, 66],
+      [130, 54],
+      [151, 48],
+      [145, 28],
+      [121, 20],
+      [103, 6],
+      [78, 9],
+      [59, 25],
+      [42, 35],
+      [25, 42],
+      [8, 42]
+    ],
+    "#6c7d48",
+    landStroke
+  );
+
+  paintPolygon(
+    context,
+    [
+      [112, -11],
+      [131, -10],
+      [153, -24],
+      [146, -39],
+      [125, -42],
+      [113, -28]
+    ],
+    "#8a7948",
+    landStroke
+  );
+
+  paintPolygon(
+    context,
+    [
+      [-52, 60],
+      [-42, 75],
+      [-20, 82],
+      [-18, 68],
+      [-32, 58]
+    ],
+    "#d4e3dc",
+    "rgba(255,255,255,0.5)"
+  );
+
+  context.globalAlpha = 0.34;
+  context.fillStyle = "#a99056";
 
   for (
-    let group = 0;
-    group < 34;
-    group += 1
+    let patch = 0;
+    patch < 190;
+    patch += 1
   ) {
-    const centerX = random() * WIDTH;
-    const centerY =
-      55 + random() * (HEIGHT - 110);
-
-    const blobs =
-      4 + Math.floor(random() * 8);
-
-    context.fillStyle =
-      landColors[
-        Math.floor(
-          random() * landColors.length
-        )
-      ]!;
-
-    context.globalAlpha =
-      0.72 + random() * 0.22;
-
-    for (
-      let blob = 0;
-      blob < blobs;
-      blob += 1
-    ) {
-      const x =
-        centerX +
-        (random() - 0.5) * 90;
-      const y =
-        centerY +
-        (random() - 0.5) * 55;
-
-      context.beginPath();
-      context.ellipse(
-        x,
-        y,
-        18 + random() * 42,
-        7 + random() * 24,
-        (random() - 0.5) * 1.2,
-        0,
-        Math.PI * 2
-      );
-      context.fill();
-    }
+    context.beginPath();
+    context.ellipse(
+      random() * WIDTH,
+      55 +
+      random() *
+      (
+        HEIGHT -
+        110
+      ),
+      2 +
+      random() * 14,
+      1 +
+      random() * 6,
+      random() * Math.PI,
+      0,
+      Math.PI * 2
+    );
+    context.fill();
   }
 
-  context.globalAlpha = 0.8;
-  context.fillStyle = "#eef6fb";
-  context.fillRect(0, 0, WIDTH, 17);
-  context.fillRect(0, HEIGHT - 18, WIDTH, 18);
+  context.globalAlpha = 0.88;
+  context.fillStyle = "#f4fbff";
+  context.fillRect(
+    0,
+    0,
+    WIDTH,
+    20
+  );
+  context.fillRect(
+    0,
+    HEIGHT - 22,
+    WIDTH,
+    22
+  );
 
-  context.globalAlpha = 0.2;
+  context.globalAlpha = 0.22;
   context.strokeStyle = "#ffffff";
-  context.lineWidth = 2.2;
 
   for (
     let cloud = 0;
-    cloud < 70;
+    cloud < 120;
     cloud += 1
   ) {
     const y =
-      35 + random() * (HEIGHT - 70);
-    const x = random() * WIDTH;
+      32 +
+      random() *
+      (
+        HEIGHT -
+        64
+      );
+
+    const x =
+      random() * WIDTH;
+
+    context.lineWidth =
+      1.2 +
+      random() * 3.5;
 
     context.beginPath();
     context.ellipse(
       x,
       y,
-      12 + random() * 55,
-      1.5 + random() * 5,
-      (random() - 0.5) * 0.35,
+      12 +
+      random() * 68,
+      1.5 +
+      random() * 6,
+      (
+        random() -
+        0.5
+      ) * 0.45,
       0,
       Math.PI * 2
     );
@@ -282,12 +494,79 @@ function paintEarth(
   context.globalAlpha = 1;
 }
 
+function paintMars(
+  context: CanvasRenderingContext2D,
+  random: () => number
+): void {
+  paintRockyWorld(
+    context,
+    random,
+    "#a84f2c",
+    "#dc8252",
+    "#4e241a",
+    72
+  );
+
+  context.globalAlpha = 0.3;
+  context.fillStyle = "#4a261d";
+
+  for (
+    let region = 0;
+    region < 38;
+    region += 1
+  ) {
+    context.beginPath();
+    context.ellipse(
+      random() * WIDTH,
+      55 +
+      random() *
+      (
+        HEIGHT -
+        110
+      ),
+      18 +
+      random() * 72,
+      4 +
+      random() * 22,
+      (
+        random() -
+        0.5
+      ) * 0.8,
+      0,
+      Math.PI * 2
+    );
+    context.fill();
+  }
+
+  context.globalAlpha = 0.72;
+  context.fillStyle = "#e4d8c5";
+  context.fillRect(
+    0,
+    0,
+    WIDTH,
+    10
+  );
+  context.fillRect(
+    0,
+    HEIGHT - 8,
+    WIDTH,
+    8
+  );
+
+  context.globalAlpha = 1;
+}
+
 function paintVenus(
   context: CanvasRenderingContext2D,
   random: () => number
 ): void {
   context.fillStyle = "#c58c42";
-  context.fillRect(0, 0, WIDTH, HEIGHT);
+  context.fillRect(
+    0,
+    0,
+    WIDTH,
+    HEIGHT
+  );
 
   const colors = [
     "#e9c881",
@@ -299,23 +578,32 @@ function paintVenus(
 
   for (
     let band = 0;
-    band < 90;
+    band < 118;
     band += 1
   ) {
-    const y = random() * HEIGHT;
+    const y =
+      random() * HEIGHT;
+
     const amplitude =
-      3 + random() * 11;
+      3 +
+      random() * 12;
 
     context.strokeStyle =
       colors[
         Math.floor(
-          random() * colors.length
+          random() *
+          colors.length
         )
       ]!;
+
     context.globalAlpha =
-      0.16 + random() * 0.25;
+      0.16 +
+      random() * 0.25;
+
     context.lineWidth =
-      2 + random() * 8;
+      2 +
+      random() * 8;
+
     context.beginPath();
 
     for (
@@ -328,12 +616,19 @@ function paintVenus(
         Math.sin(
           x * 0.018 +
           random() * 0.4
-        ) * amplitude;
+        ) *
+        amplitude;
 
       if (x === -20) {
-        context.moveTo(x, waveY);
+        context.moveTo(
+          x,
+          waveY
+        );
       } else {
-        context.lineTo(x, waveY);
+        context.lineTo(
+          x,
+          waveY
+        );
       }
     }
 
@@ -354,15 +649,18 @@ function paintGasGiant(
 
   while (y < HEIGHT) {
     const bandHeight =
-      7 + random() * 26;
+      7 +
+      random() * 26;
 
     context.fillStyle =
       palette[
-        band % palette.length
+        band %
+        palette.length
       ]!;
 
     context.globalAlpha =
-      0.78 + random() * 0.22;
+      0.78 +
+      random() * 0.22;
 
     context.fillRect(
       0,
@@ -371,23 +669,24 @@ function paintGasGiant(
       bandHeight + 1
     );
 
-    context.globalAlpha = 0.13;
+    context.globalAlpha = 0.14;
     context.fillStyle = "#ffffff";
 
     for (
       let streak = 0;
-      streak < 20;
+      streak < 32;
       streak += 1
     ) {
-      const streakX = random() * WIDTH;
-      const streakWidth =
-        10 + random() * 90;
-
       context.fillRect(
-        streakX,
-        y + random() * bandHeight,
-        streakWidth,
-        Math.max(1, random() * 2.2)
+        random() * WIDTH,
+        y +
+        random() * bandHeight,
+        12 +
+        random() * 115,
+        Math.max(
+          1,
+          random() * 2.4
+        )
       );
     }
 
@@ -396,23 +695,38 @@ function paintGasGiant(
   }
 
   if (spot) {
-    context.globalAlpha = 0.9;
-    context.fillStyle = "#a74c33";
+    context.globalAlpha = 0.92;
+    context.fillStyle = "#9f4934";
     context.beginPath();
     context.ellipse(
       WIDTH * 0.72,
       HEIGHT * 0.61,
-      58,
-      23,
+      76,
+      30,
       -0.08,
       0,
       Math.PI * 2
     );
     context.fill();
 
+    context.globalAlpha = 0.28;
+    context.strokeStyle = "#f0b98f";
+    context.lineWidth = 6;
+    context.stroke();
+
     context.globalAlpha = 0.22;
-    context.strokeStyle = "#f1c09a";
-    context.lineWidth = 5;
+    context.strokeStyle = "#7a3429";
+    context.lineWidth = 3;
+    context.beginPath();
+    context.ellipse(
+      WIDTH * 0.72,
+      HEIGHT * 0.61,
+      55,
+      18,
+      -0.08,
+      0,
+      Math.PI * 2
+    );
     context.stroke();
   }
 
@@ -434,30 +748,58 @@ function paintIceGiant(
       HEIGHT
     );
 
-  gradient.addColorStop(0, top);
-  gradient.addColorStop(1, bottom);
+  gradient.addColorStop(
+    0,
+    top
+  );
+  gradient.addColorStop(
+    1,
+    bottom
+  );
 
   context.fillStyle = gradient;
-  context.fillRect(0, 0, WIDTH, HEIGHT);
+  context.fillRect(
+    0,
+    0,
+    WIDTH,
+    HEIGHT
+  );
 
-  context.globalAlpha = 0.11;
+  context.globalAlpha = 0.1;
   context.strokeStyle = accent;
 
   for (
     let band = 0;
-    band < 42;
+    band < 54;
     band += 1
   ) {
+    const y =
+      random() * HEIGHT;
+
     context.lineWidth =
-      1 + random() * 4;
+      1 +
+      random() * 4;
+
     context.beginPath();
     context.moveTo(
       0,
-      random() * HEIGHT
+      y
     );
-    context.lineTo(
+    context.bezierCurveTo(
+      WIDTH * 0.33,
+      y +
+      (
+        random() -
+        0.5
+      ) * 10,
+      WIDTH * 0.66,
+      y +
+      (
+        random() -
+        0.5
+      ) * 10,
       WIDTH,
-      random() * HEIGHT
+      y
     );
     context.stroke();
   }
@@ -477,41 +819,90 @@ function paintSun(
       HEIGHT
     );
 
-  gradient.addColorStop(0, "#fff0a0");
-  gradient.addColorStop(0.48, "#ffb321");
-  gradient.addColorStop(1, "#ea5b0b");
+  gradient.addColorStop(
+    0,
+    "#fff3aa"
+  );
+  gradient.addColorStop(
+    0.42,
+    "#ffc13a"
+  );
+  gradient.addColorStop(
+    0.72,
+    "#ff8a16"
+  );
+  gradient.addColorStop(
+    1,
+    "#d94809"
+  );
 
   context.fillStyle = gradient;
-  context.fillRect(0, 0, WIDTH, HEIGHT);
+  context.fillRect(
+    0,
+    0,
+    WIDTH,
+    HEIGHT
+  );
 
   addFineNoise(
     context,
     random,
-    7_500,
-    "#fff6c4",
-    "#d94f08",
-    0.28
+    11_500,
+    "#fff9cf",
+    "#c94308",
+    0.3
   );
 
-  context.globalAlpha = 0.34;
-  context.fillStyle = "#702307";
+  context.globalAlpha = 0.3;
+  context.fillStyle = "#722208";
 
   for (
     let index = 0;
-    index < 18;
+    index < 27;
     index += 1
   ) {
     context.beginPath();
     context.ellipse(
       random() * WIDTH,
-      40 + random() * (HEIGHT - 80),
-      4 + random() * 18,
-      2 + random() * 7,
+      40 +
+      random() *
+      (
+        HEIGHT -
+        80
+      ),
+      4 +
+      random() * 22,
+      2 +
+      random() * 8,
       random() * Math.PI,
       0,
       Math.PI * 2
     );
     context.fill();
+  }
+
+  context.globalAlpha = 0.15;
+  context.strokeStyle = "#fff4aa";
+
+  for (
+    let arc = 0;
+    arc < 34;
+    arc += 1
+  ) {
+    context.lineWidth =
+      1 +
+      random() * 2.5;
+    context.beginPath();
+    context.arc(
+      random() * WIDTH,
+      random() * HEIGHT,
+      16 +
+      random() * 55,
+      random() * Math.PI,
+      random() * Math.PI +
+      Math.PI * 0.8
+    );
+    context.stroke();
   }
 
   context.globalAlpha = 1;
@@ -530,7 +921,8 @@ export function createProceduralCelestialTexture(
     requireContext(canvas);
 
   const seed =
-    preset.split("")
+    preset
+      .split("")
       .reduce(
         (
           total,
@@ -561,7 +953,7 @@ export function createProceduralCelestialTexture(
         "#77736d",
         "#a39d91",
         "#403d3a",
-        135
+        190
       );
       break;
 
@@ -586,18 +978,14 @@ export function createProceduralCelestialTexture(
         "#8f918f",
         "#c4c5c1",
         "#4c4e4d",
-        160
+        225
       );
       break;
 
     case "mars":
-      paintRockyWorld(
+      paintMars(
         context,
-        random,
-        "#a44a2b",
-        "#d27a4c",
-        "#54271d",
-        58
+        random
       );
       break;
 
@@ -690,20 +1078,29 @@ export function createRadialHaloTexture():
     "rgba(255,255,255,1)"
   );
   gradient.addColorStop(
-    0.22,
-    "rgba(255,226,150,0.92)"
+    0.18,
+    "rgba(255,232,164,0.95)"
   );
   gradient.addColorStop(
-    0.52,
-    "rgba(255,135,25,0.35)"
+    0.46,
+    "rgba(255,142,35,0.34)"
+  );
+  gradient.addColorStop(
+    0.72,
+    "rgba(255,91,8,0.12)"
   );
   gradient.addColorStop(
     1,
-    "rgba(255,95,0,0)"
+    "rgba(255,70,0,0)"
   );
 
   context.fillStyle = gradient;
-  context.fillRect(0, 0, 256, 256);
+  context.fillRect(
+    0,
+    0,
+    256,
+    256
+  );
 
   const texture =
     new CanvasTexture(canvas);
