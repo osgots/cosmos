@@ -19,3 +19,12 @@ export type {
   CelestialBodyKind,
   CelestialBodyParentId
 } from "./CelestialBody";
+
+export {
+  circularOrbitPosition,
+  lightTravelTimeS
+} from "./orbit";
+
+export type {
+  OrbitalPosition2
+} from "./orbit";

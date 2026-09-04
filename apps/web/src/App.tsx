@@ -1,15 +1,17 @@
-﻿import {
+import {
   useEffect,
   useState
 } from "react";
 
 import TesseractLab from "./features/dimensions/TesseractLab";
+import UniverseExplorer from "./features/universe/UniverseExplorer";
 
 import "./App.css";
 import "./mobile.css";
 
 type CosmosExperience =
   | "HOME"
+  | "UNIVERSE"
   | "4D_LAB";
 
 interface ScaleDestination {
@@ -111,6 +113,13 @@ function routeFromLocation():
   CosmosExperience {
   if (
     window.location.hash ===
+    "#/universe"
+  ) {
+    return "UNIVERSE";
+  }
+
+  if (
+    window.location.hash ===
     "#/4d-lab"
   ) {
     return "4D_LAB";
@@ -188,6 +197,9 @@ function restoreHomeScroll():
 }
 
 interface CosmosHomeProps {
+  readonly onOpenUniverse:
+    () => void;
+
   readonly onOpen4D:
     () => void;
 
@@ -198,6 +210,7 @@ interface CosmosHomeProps {
 }
 
 function CosmosHome({
+  onOpenUniverse,
   onOpen4D,
   onScrollTo
 }: CosmosHomeProps) {
@@ -290,10 +303,7 @@ function CosmosHome({
             type="button"
             className="universe-primary-button"
             onClick={
-              () =>
-                onScrollTo(
-                  "journey"
-                )
+              onOpenUniverse
             }
           >
             BEGIN JOURNEY
@@ -550,8 +560,8 @@ function App() {
   useEffect(
     () => {
       const labActive =
-        experience ===
-        "4D_LAB";
+        experience !==
+        "HOME";
 
       document.documentElement
         .classList
@@ -649,6 +659,33 @@ function App() {
     },
     []
   );
+
+  function openUniverse():
+    void {
+    saveHomeScroll();
+
+    window.history.pushState(
+      {
+        cosmosRoute:
+          "universe",
+
+        cosmosFromHome:
+          true
+      },
+      "",
+      `${window.location.pathname}${window.location.search}#/universe`
+    );
+
+    setExperience(
+      "UNIVERSE"
+    );
+
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: "instant"
+    });
+  }
 
   function open4D():
     void {
@@ -760,6 +797,28 @@ function App() {
 
   if (
     experience ===
+    "UNIVERSE"
+  ) {
+    return (
+      <div className="cosmos-experience-wrapper">
+        <UniverseExplorer />
+
+        <button
+          type="button"
+          className="cosmos-back-home"
+          onClick={
+            returnFrom4D
+          }
+          aria-label="Return to Cosmos Infinity"
+        >
+          ← BACK TO COSMOS∞
+        </button>
+      </div>
+    );
+  }
+
+  if (
+    experience ===
     "4D_LAB"
   ) {
     return (
@@ -782,6 +841,9 @@ function App() {
 
   return (
     <CosmosHome
+      onOpenUniverse={
+        openUniverse
+      }
       onOpen4D={
         open4D
       }

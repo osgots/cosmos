@@ -17,6 +17,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@cosmos/astronomy':
+        specifier: workspace:*
+        version: link:../../packages/astronomy
       '@cosmos/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts

@@ -5,7 +5,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./three-webgpu": "./src/three/ThreeWebGPUBackend.ts"
+    "./three-webgpu": "./src/three/ThreeWebGPUBackend.ts",
+    "./three-universe": "./src/three/ThreeUniverseBackend.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

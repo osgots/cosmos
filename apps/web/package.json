@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@cosmos/astronomy": "workspace:*",
     "@cosmos/contracts": "workspace:*",
     "@cosmos/geometry-4d": "workspace:*",
     "@cosmos/math-core": "workspace:*",
