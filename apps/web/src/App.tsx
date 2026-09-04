@@ -6,6 +6,7 @@
 import TesseractLab from "./features/dimensions/TesseractLab";
 
 import "./App.css";
+import "./mobile.css";
 
 type CosmosExperience =
   | "HOME"
@@ -792,3 +793,4 @@ function App() {
 }
 
 export default App;
+

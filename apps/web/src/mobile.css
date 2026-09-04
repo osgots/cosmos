@@ -1,0 +1,788 @@
+﻿/* =====================================================================
+   COSMOS∞ MOBILE RESPONSIVE LAYER
+   ---------------------------------------------------------------------
+   IMPORTANT:
+   - Desktop styles remain untouched.
+   - Renderer remains untouched.
+   - 4D mathematics remains untouched.
+   - W-depth colors remain untouched.
+   ===================================================================== */
+
+@media (max-width: 720px) {
+
+  /* ================================================================
+     MOBILE VIEWPORT
+     ================================================================ */
+
+  html.cosmos-lab-active,
+  body.cosmos-lab-active,
+  body.cosmos-lab-active #root,
+  .cosmos-experience-wrapper,
+  .cosmos-shell {
+    width: 100%;
+    height: 100dvh;
+    min-height: 100dvh;
+
+    overflow: hidden;
+  }
+
+  .cosmos-experience-wrapper,
+  .cosmos-shell {
+    background: #000;
+  }
+
+  /* ================================================================
+     4D LAB HEADER
+     ================================================================ */
+
+  .cosmos-hud {
+    top:
+      calc(
+        16px +
+        env(safe-area-inset-top)
+      );
+
+    left:
+      calc(
+        16px +
+        env(safe-area-inset-left)
+      );
+
+    width: 54vw;
+    max-width: 230px;
+  }
+
+  .cosmos-brand {
+    max-width: 100%;
+
+    overflow: hidden;
+
+    font-size:
+      clamp(
+        1.18rem,
+        6vw,
+        1.5rem
+      );
+
+    line-height: 1;
+
+    letter-spacing: 0.12em;
+
+    white-space: nowrap;
+  }
+
+  .cosmos-brand span {
+    font-size: 1em;
+  }
+
+  .cosmos-subtitle {
+    max-width: 185px;
+
+    margin-top: 9px;
+
+    font-size: 0.47rem;
+
+    line-height: 1.45;
+
+    letter-spacing: 0.13em;
+  }
+
+  .cosmos-status {
+    margin-top: 12px;
+
+    padding:
+      6px 9px;
+
+    font-size: 0.5rem;
+
+    letter-spacing: 0.12em;
+  }
+
+  /* ================================================================
+     BACK BUTTON
+     ================================================================ */
+
+  .cosmos-back-home {
+    top:
+      calc(
+        14px +
+        env(safe-area-inset-top)
+      );
+
+    right:
+      calc(
+        10px +
+        env(safe-area-inset-right)
+      );
+
+    left: auto;
+
+    transform: none;
+
+    width: auto;
+    max-width: 145px;
+
+    padding:
+      8px 10px;
+
+    overflow: hidden;
+
+    border-radius: 999px;
+
+    background:
+      rgb(2 8 16 / 0.92);
+
+    font-size: 0.42rem;
+
+    line-height: 1.2;
+
+    letter-spacing: 0.08em;
+
+    white-space: nowrap;
+
+    text-overflow: ellipsis;
+  }
+
+  /* ================================================================
+     4D CANVAS
+     ----------------------------------------------------------------
+     This ONLY changes the visible canvas framing.
+     It does not modify projection mathematics or renderer data.
+     ================================================================ */
+
+  .cosmos-viewport {
+    width: 100%;
+    height: 100%;
+
+    transform:
+      translateY(-7dvh)
+      scale(0.78);
+
+    transform-origin:
+      center center;
+  }
+
+  /* ================================================================
+     HIDE DESKTOP-ONLY OVERLAYS
+     ================================================================ */
+
+  .cosmos-readout,
+  .cosmos-caption,
+  .cosmos-w-legend {
+    display: none;
+  }
+
+  /* ================================================================
+     MOBILE CONTROL SHEET
+     ================================================================ */
+
+  .cosmos-controls {
+    left:
+      calc(
+        10px +
+        env(safe-area-inset-left)
+      );
+
+    right:
+      calc(
+        10px +
+        env(safe-area-inset-right)
+      );
+
+    bottom:
+      calc(
+        8px +
+        env(safe-area-inset-bottom)
+      );
+
+    width: auto;
+
+    max-height: 38dvh;
+
+    padding: 12px;
+
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    overscroll-behavior: contain;
+
+    -webkit-overflow-scrolling:
+      touch;
+
+    border-radius: 18px;
+
+    /*
+     * More opaque on mobile.
+     *
+     * This prevents the tesseract underneath from visually washing
+     * out the controls.
+     */
+    background:
+      rgb(2 8 16 / 0.95);
+
+    backdrop-filter: none;
+
+    scrollbar-width: thin;
+  }
+
+  /* ================================================================
+     STICKY CONTROL HEADER
+     ================================================================ */
+
+  .cosmos-controls-header {
+    position: sticky;
+
+    top: -12px;
+
+    z-index: 5;
+
+    margin:
+      -12px -12px
+      12px;
+
+    padding: 12px;
+
+    background:
+      rgb(2 8 16 / 0.98);
+
+    border-bottom:
+      1px solid
+      rgb(255 255 255 / 0.07);
+  }
+
+  .cosmos-panel-kicker {
+    font-size: 0.44rem;
+
+    letter-spacing: 0.14em;
+  }
+
+  .cosmos-controls h2 {
+    font-size: 0.72rem;
+
+    letter-spacing: 0.12em;
+  }
+
+  .cosmos-toggle {
+    min-width: 62px;
+    min-height: 38px;
+
+    padding:
+      8px 11px;
+  }
+
+  /* ================================================================
+     ROTATION CONTROLS
+
+     OLD:
+       XY XZ XW
+       YZ YW ZW
+
+     NEW:
+       XY XZ
+       XW YZ
+       YW ZW
+
+     Much better slider precision on a phone.
+     ================================================================ */
+
+  .cosmos-rotation-grid {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+
+    gap:
+      13px 18px;
+  }
+
+  .cosmos-slider-heading {
+    margin-bottom: 6px;
+
+    font-size: 0.52rem;
+  }
+
+  .cosmos-slider-heading output {
+    font-size: 0.47rem;
+  }
+
+  .cosmos-slider
+  input[type="range"] {
+    width: 100%;
+
+    min-height: 30px;
+
+    touch-action: pan-y;
+  }
+
+  .cosmos-control-divider {
+    margin:
+      12px 0;
+  }
+
+  /* ================================================================
+     VIEW MODE
+     ================================================================ */
+
+  .cosmos-view-section {
+    margin-bottom: 12px;
+  }
+
+  .cosmos-mode-switch {
+    gap: 4px;
+
+    padding: 4px;
+  }
+
+  .cosmos-mode-button {
+    min-height: 42px;
+
+    padding:
+      7px 2px;
+
+    font-size: 0.41rem;
+
+    line-height: 1.2;
+
+    letter-spacing: 0.045em;
+  }
+
+  .cosmos-view-control {
+    margin-top: 10px;
+  }
+
+  .cosmos-view-description {
+    margin-top: 10px;
+
+    padding:
+      9px 10px;
+
+    font-size: 0.46rem;
+
+    line-height: 1.5;
+  }
+
+  .cosmos-reset {
+    min-height: 42px;
+
+    padding:
+      8px 10px;
+
+    font-size: 0.49rem;
+  }
+
+  .cosmos-control-note {
+    margin-top: 9px;
+
+    padding-bottom:
+      env(safe-area-inset-bottom);
+
+    font-size: 0.45rem;
+
+    line-height: 1.5;
+  }
+
+  /* ================================================================
+     UNIVERSE HOMEPAGE
+     ================================================================ */
+
+  .universe-home {
+    width: 100%;
+
+    overflow-x: hidden;
+  }
+
+  .universe-nav {
+    width:
+      calc(
+        100% - 28px
+      );
+
+    padding:
+      16px 0;
+  }
+
+  .universe-logo {
+    flex-shrink: 0;
+
+    font-size: 0.86rem;
+
+    letter-spacing: 0.11em;
+  }
+
+  .universe-nav nav {
+    gap: 8px;
+  }
+
+  .universe-nav nav button {
+    min-height: 36px;
+
+    padding:
+      0 2px;
+
+    font-size: 0.45rem;
+
+    letter-spacing: 0.06em;
+  }
+
+  .universe-hero,
+  .universe-journey,
+  .universe-dimensions-section,
+  .universe-science,
+  .universe-footer {
+    width:
+      calc(
+        100% - 32px
+      );
+  }
+
+  .universe-hero {
+    min-height:
+      calc(
+        100dvh - 70px
+      );
+
+    padding:
+      45px 0 70px;
+  }
+
+  .universe-eyebrow,
+  .universe-section-label {
+    font-size: 0.48rem;
+
+    letter-spacing: 0.13em;
+  }
+
+  .universe-hero h1 {
+    margin:
+      20px 0 22px;
+
+    font-size:
+      clamp(
+        3rem,
+        15vw,
+        4.8rem
+      );
+
+    line-height: 0.94;
+
+    letter-spacing:
+      -0.05em;
+  }
+
+  .universe-hero > p {
+    width: 100%;
+    max-width: none;
+
+    font-size: 0.9rem;
+
+    line-height: 1.65;
+  }
+
+  .universe-hero-actions {
+    width: 100%;
+
+    margin-top: 30px;
+
+    flex-direction: column;
+
+    align-items: stretch;
+  }
+
+  .universe-primary-button,
+  .universe-secondary-button {
+    width: 100%;
+
+    min-height: 50px;
+  }
+
+  .universe-origin {
+    margin-top: 32px;
+
+    flex-direction: column;
+
+    align-items: flex-start;
+
+    gap: 7px;
+
+    font-size: 0.45rem;
+
+    line-height: 1.5;
+  }
+
+  /* ================================================================
+     SCALE JOURNEY
+     ================================================================ */
+
+  .universe-journey {
+    padding:
+      75px 0;
+  }
+
+  .universe-section-heading {
+    margin-bottom: 36px;
+  }
+
+  .universe-section-heading h2,
+  .universe-dimensions-section h2 {
+    font-size:
+      clamp(
+        2.5rem,
+        12vw,
+        4rem
+      );
+  }
+
+  .universe-scale-path {
+    grid-template-columns:
+      1fr;
+  }
+
+  .universe-scale-node {
+    grid-template-columns:
+      38px 1fr;
+
+    min-height: 145px;
+
+    padding:
+      19px 16px;
+  }
+
+  .universe-scale-content h3 {
+    margin:
+      17px 0 7px;
+
+    font-size: 1.32rem;
+  }
+
+  .universe-scale-content p {
+    font-size: 0.75rem;
+
+    line-height: 1.55;
+  }
+
+  /* ================================================================
+     DIMENSIONS LAB CARD
+     ================================================================ */
+
+  .universe-dimensions-section {
+    grid-template-columns:
+      1fr;
+
+    gap: 34px;
+
+    padding:
+      80px 0;
+  }
+
+  .universe-lab-card {
+    width: 100%;
+
+    min-height: 320px;
+
+    padding: 24px;
+
+    border-radius: 20px;
+  }
+
+  .universe-lab-card > strong {
+    font-size:
+      clamp(
+        2rem,
+        10vw,
+        3.1rem
+      );
+  }
+
+  /* ================================================================
+     SCIENCE
+     ================================================================ */
+
+  .universe-science {
+    padding:
+      75px 0 90px;
+  }
+
+  .universe-science-grid {
+    grid-template-columns:
+      1fr;
+  }
+
+  .universe-science-grid article {
+    min-height: 175px;
+
+    padding: 21px;
+
+    border-right: 0;
+
+    border-bottom:
+      1px solid
+      rgb(255 255 255 / 0.07);
+  }
+
+  .universe-science-grid article:last-child {
+    border-bottom: 0;
+  }
+
+  .universe-science-grid h3 {
+    margin:
+      38px 0 9px;
+  }
+
+  .universe-footer {
+    flex-direction: column;
+
+    gap: 10px;
+
+    padding:
+      24px 0
+      calc(
+        28px +
+        env(safe-area-inset-bottom)
+      );
+
+    line-height: 1.5;
+  }
+}
+
+/* =====================================================================
+   VERY SMALL PHONES
+   ===================================================================== */
+
+@media (max-width: 380px) {
+
+  .cosmos-hud {
+    width: 50vw;
+  }
+
+  .cosmos-brand {
+    font-size: 1.1rem;
+
+    letter-spacing: 0.09em;
+  }
+
+  .cosmos-subtitle {
+    max-width: 145px;
+
+    font-size: 0.41rem;
+  }
+
+  .cosmos-back-home {
+    max-width: 122px;
+
+    padding:
+      7px 8px;
+
+    font-size: 0.37rem;
+  }
+
+  .cosmos-viewport {
+    transform:
+      translateY(-7dvh)
+      scale(0.72);
+  }
+
+  .cosmos-controls {
+    left: 7px;
+    right: 7px;
+
+    max-height: 40dvh;
+
+    padding: 11px;
+  }
+
+  .cosmos-controls-header {
+    top: -11px;
+
+    margin:
+      -11px -11px
+      11px;
+
+    padding: 11px;
+  }
+
+  .cosmos-rotation-grid {
+    gap:
+      11px 14px;
+  }
+
+  .cosmos-mode-button {
+    font-size: 0.37rem;
+  }
+
+  .universe-nav nav {
+    gap: 4px;
+  }
+
+  .universe-nav nav button {
+    font-size: 0.4rem;
+  }
+
+  .universe-logo {
+    font-size: 0.77rem;
+  }
+}
+
+/* =====================================================================
+   PHONE LANDSCAPE
+   ===================================================================== */
+
+@media
+  (max-height: 600px)
+  and
+  (orientation: landscape) {
+
+  .cosmos-hud {
+    top: 10px;
+    left: 12px;
+
+    width: 42vw;
+  }
+
+  .cosmos-brand {
+    font-size: 1.12rem;
+  }
+
+  .cosmos-subtitle {
+    margin-top: 5px;
+
+    font-size: 0.4rem;
+  }
+
+  .cosmos-status {
+    margin-top: 7px;
+  }
+
+  .cosmos-back-home {
+    top: 9px;
+    right: 9px;
+
+    left: auto;
+
+    transform: none;
+  }
+
+  .cosmos-controls {
+    top: 54px;
+
+    right: 8px;
+    bottom: 8px;
+    left: auto;
+
+    width:
+      min(
+        330px,
+        47vw
+      );
+
+    max-height: none;
+
+    overflow-y: auto;
+  }
+
+  .cosmos-viewport {
+    transform:
+      translateX(-12vw)
+      scale(0.82);
+  }
+}
