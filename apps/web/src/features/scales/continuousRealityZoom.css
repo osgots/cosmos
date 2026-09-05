@@ -2,8 +2,8 @@
   position: fixed;
   top: 86px;
   left: 50%;
-  z-index: 70;
-  width: min(360px, calc(100vw - 32px));
+  z-index: 90;
+  width: min(390px, calc(100vw - 32px));
   padding: 9px 12px 10px;
   transform: translateX(-50%) translateY(-8px);
   border: 1px solid rgb(255 255 255 / 0.08);
@@ -14,8 +14,14 @@
   pointer-events: none;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  transition: opacity 180ms ease, transform 180ms ease;
-  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  transition:
+    opacity 120ms ease,
+    transform 120ms ease;
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
 }
 
 .cosmos-reality-zoom-hud[data-visible="true"] {
@@ -23,16 +29,32 @@
   transform: translateX(-50%) translateY(0);
 }
 
+.cosmos-reality-zoom-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cosmos-reality-zoom-title,
+.cosmos-reality-zoom-motion {
+  font-size: 0.4rem;
+  letter-spacing: 0.13em;
+}
+
 .cosmos-reality-zoom-title {
-  color: rgb(137 224 255 / 0.58);
-  font-size: 0.42rem;
-  letter-spacing: 0.14em;
+  color: rgb(137 224 255 / 0.62);
+}
+
+.cosmos-reality-zoom-motion {
+  color: rgb(255 211 151 / 0.48);
+  text-align: right;
 }
 
 .cosmos-reality-zoom-label {
   margin-top: 4px;
   overflow: hidden;
-  color: rgb(235 248 255 / 0.82);
+  color: rgb(235 248 255 / 0.84);
   font-size: 0.48rem;
   letter-spacing: 0.08em;
   text-overflow: ellipsis;
@@ -55,23 +77,134 @@
   transform-origin: left center;
   background: linear-gradient(
     90deg,
-    rgb(101 215 255 / 0.86),
-    rgb(255 196 120 / 0.74)
+    rgb(101 215 255 / 0.88),
+    rgb(255 196 120 / 0.76)
   );
-  transition: transform 240ms ease;
+  transition: transform 55ms linear;
 }
 
 .cosmos-reality-zoom-hint {
   margin-top: 7px;
-  color: rgb(226 242 250 / 0.32);
-  font-size: 0.35rem;
+  color: rgb(226 242 250 / 0.34);
+  font-size: 0.34rem;
   letter-spacing: 0.08em;
+}
+
+/*
+ * The whole scientific environment participates in the zoom gesture.
+ * The origin follows the user's cursor / pinch midpoint, so the motion
+ * feels camera-driven instead of like a page transition.
+ */
+.cosmos-scale-experience[data-reality-zooming="true"] {
+  transform:
+    scale(
+      var(
+        --reality-gesture-scale,
+        1
+      )
+    );
+  transform-origin:
+    var(--reality-origin-x, 50%)
+    var(--reality-origin-y, 50%);
+  filter:
+    saturate(
+      calc(
+        1 +
+        var(--reality-depth, 0) *
+        0.08
+      )
+    )
+    contrast(
+      calc(
+        1 +
+        var(--reality-depth, 0) *
+        0.04
+      )
+    );
+  will-change: transform, filter;
+  transition:
+    transform 42ms linear,
+    filter 60ms linear;
+}
+
+.cosmos-reality-lens {
+  --reality-lens-opacity: 0;
+  --reality-lens-x: 50%;
+  --reality-lens-y: 50%;
+
+  position: fixed;
+  inset: 0;
+  z-index: 82;
+  overflow: hidden;
+  opacity: var(--reality-lens-opacity);
+  pointer-events: none;
+  transition: opacity 52ms linear;
+}
+
+.cosmos-reality-lens-core,
+.cosmos-reality-lens-streaks {
+  position: absolute;
+  inset: -16%;
+  pointer-events: none;
+}
+
+.cosmos-reality-lens-core {
+  background:
+    radial-gradient(
+      circle at
+      var(--reality-lens-x)
+      var(--reality-lens-y),
+      rgb(225 248 255 / 0.13) 0%,
+      rgb(103 196 255 / 0.055) 15%,
+      rgb(18 43 72 / 0.03) 38%,
+      rgb(0 0 0 / 0) 68%
+    );
+  mix-blend-mode: screen;
+}
+
+.cosmos-reality-lens-streaks {
+  opacity: 0.42;
+  background:
+    repeating-radial-gradient(
+      ellipse at
+      var(--reality-lens-x)
+      var(--reality-lens-y),
+      rgb(255 255 255 / 0) 0 20px,
+      rgb(176 224 255 / 0.055) 21px,
+      rgb(255 255 255 / 0) 23px 36px
+    );
+  transform: scale(1.18);
+  filter: blur(0.6px);
+}
+
+.cosmos-reality-lens[data-direction="OUT"]
+  .cosmos-reality-lens-streaks {
+  transform: scale(0.94);
+}
+
+.cosmos-reality-lens[data-direction="IN"]
+  .cosmos-reality-lens-streaks {
+  transform: scale(1.28);
+}
+
+.cosmos-reality-lens[data-switching="true"]
+  .cosmos-reality-lens-core {
+  background:
+    radial-gradient(
+      circle at
+      var(--reality-lens-x)
+      var(--reality-lens-y),
+      rgb(240 252 255 / 0.34) 0%,
+      rgb(120 207 255 / 0.16) 12%,
+      rgb(13 34 61 / 0.08) 34%,
+      rgb(0 0 0 / 0) 72%
+    );
 }
 
 @media (max-width: 720px) {
   .cosmos-reality-zoom-hud {
     top: calc(58px + env(safe-area-inset-top, 0px));
-    width: min(280px, calc(100vw - 90px));
+    width: min(286px, calc(100vw - 88px));
     padding: 7px 9px 8px;
     border-radius: 11px;
     background: rgb(2 8 16 / 0.86);
@@ -79,29 +212,50 @@
     -webkit-backdrop-filter: none;
   }
 
-  .cosmos-reality-zoom-title {
-    font-size: 0.31rem;
+  .cosmos-reality-zoom-title,
+  .cosmos-reality-zoom-motion {
+    font-size: 0.29rem;
   }
 
   .cosmos-reality-zoom-label {
-    font-size: 0.36rem;
+    font-size: 0.35rem;
   }
 
   .cosmos-reality-zoom-hint {
-    font-size: 0.27rem;
+    font-size: 0.26rem;
+  }
+
+  .cosmos-reality-lens-streaks {
+    opacity: 0.32;
+  }
+}
+
+@media (max-width: 360px) {
+  .cosmos-reality-zoom-hud {
+    width: min(246px, calc(100vw - 78px));
+  }
+
+  .cosmos-reality-zoom-motion {
+    display: none;
   }
 }
 
 @media (max-height: 600px) and (orientation: landscape) {
   .cosmos-reality-zoom-hud {
     top: calc(8px + env(safe-area-inset-top, 0px));
-    width: min(280px, 36vw);
+    width: min(300px, 37vw);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .cosmos-reality-zoom-hud,
-  .cosmos-reality-zoom-fill {
+  .cosmos-reality-zoom-fill,
+  .cosmos-scale-experience[data-reality-zooming="true"],
+  .cosmos-reality-lens {
     transition: none;
+  }
+
+  .cosmos-reality-lens {
+    display: none;
   }
 }
