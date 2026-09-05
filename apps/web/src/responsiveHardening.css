@@ -1,0 +1,91 @@
+html,
+body,
+#root {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  margin: 0;
+  overflow-x: hidden;
+}
+
+@supports (overflow: clip) {
+  html,
+  body,
+  #root {
+    overflow-x: clip;
+  }
+}
+
+body {
+  min-height: 100%;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+main,
+section,
+article,
+aside,
+nav,
+header,
+footer,
+div {
+  min-width: 0;
+}
+
+canvas,
+img,
+video,
+svg {
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  max-width: 100%;
+}
+
+button,
+a,
+input[type="range"] {
+  touch-action: manipulation;
+}
+
+.cosmos-experience-wrapper,
+.cosmos-scale-experience,
+.cosmos-shell,
+.ue-shell,
+.cse-shell {
+  width: 100%;
+  max-width: 100%;
+}
+
+@supports (height: 100dvh) {
+  .cosmos-shell,
+  .ue-shell,
+  .cse-shell,
+  .cosmos-scale-experience {
+    min-height: 100dvh;
+  }
+}
+
+@media (max-width: 720px) {
+  button,
+  [role="button"] {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  input,
+  select,
+  textarea {
+    font-size: max(16px, 1em);
+  }
+
+  .universe-home,
+  .cosmos-experience-wrapper,
+  .cosmos-scale-experience {
+    overflow-x: hidden;
+  }
+}
