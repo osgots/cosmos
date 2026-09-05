@@ -1,0 +1,321 @@
+.dimension-lab-shell {
+  --dimension-accent: rgb(130 218 255);
+}
+
+.dimension-lab-viewport {
+  touch-action: none;
+  cursor: grab;
+}
+
+.dimension-lab-viewport:active {
+  cursor: grabbing;
+}
+
+.dimension-selector {
+  position: fixed;
+  top: 24px;
+  right: 26px;
+  z-index: 36;
+  display: grid;
+  grid-template-columns: auto minmax(160px, 280px) 66px;
+  align-items: center;
+  gap: 10px;
+  width: min(520px, calc(100vw - 52px));
+  padding: 10px 12px;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 16px;
+  background: rgb(2 8 16 / 0.8);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+.dimension-selector > div {
+  display: flex;
+  min-width: 88px;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.dimension-selector span {
+  color: rgb(223 240 250 / 0.38);
+  font-size: 0.4rem;
+  letter-spacing: 0.11em;
+}
+
+.dimension-selector strong {
+  color: #f3fbff;
+  font-size: 0.9rem;
+  letter-spacing: 0.08em;
+}
+
+.dimension-selector input[type="range"] {
+  width: 100%;
+  accent-color: #dff8ff;
+}
+
+.dimension-number-input,
+.dimension-plane-grid input {
+  width: 100%;
+  min-height: 34px;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 8px;
+  background: rgb(255 255 255 / 0.025);
+  color: #eef8ff;
+  text-align: center;
+  font: inherit;
+  font-size: 0.56rem;
+}
+
+.dimension-readout strong {
+  max-width: 190px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dimension-view-controls {
+  position: fixed;
+  right: 28px;
+  top: 98px;
+  z-index: 34;
+  display: grid;
+  grid-template-columns: repeat(3, 46px);
+  gap: 5px;
+  padding: 7px;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 15px;
+  background: rgb(2 8 16 / 0.78);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+.dimension-view-controls button,
+.dimension-view-controls span {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+}
+
+.dimension-view-controls button {
+  border: 1px solid rgb(255 255 255 / 0.08);
+  background: rgb(255 255 255 / 0.025);
+  color: #eef8ff;
+  cursor: pointer;
+  font-size: 0.78rem;
+}
+
+.dimension-view-controls button:hover {
+  border-color: rgb(126 219 255 / 0.3);
+  background: rgb(112 205 255 / 0.08);
+}
+
+.dimension-view-controls span {
+  color: rgb(229 244 252 / 0.58);
+  font-size: 0.42rem;
+  letter-spacing: 0.07em;
+}
+
+.dimension-view-controls .dimension-view-reset {
+  grid-column: 1 / -1;
+  font-size: 0.38rem;
+  letter-spacing: 0.08em;
+}
+
+.dimension-plane-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+  margin-bottom: 14px;
+}
+
+.dimension-plane-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dimension-plane-grid span {
+  color: rgb(225 240 250 / 0.38);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.42rem;
+  letter-spacing: 0.09em;
+}
+
+.dimension-disclaimer {
+  margin-top: 10px;
+}
+
+.dimension-sampling-badge {
+  margin: 12px 0 0;
+  padding: 9px 10px;
+  border: 1px solid rgb(255 178 112 / 0.13);
+  border-radius: 9px;
+  background: rgb(255 128 80 / 0.035);
+  color: rgb(255 209 169 / 0.54);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.39rem;
+  line-height: 1.5;
+  letter-spacing: 0.055em;
+}
+
+.dimension-caption {
+  max-width: min(700px, 56vw);
+}
+
+.dimension-interaction-hint {
+  position: fixed;
+  right: 28px;
+  top: 260px;
+  z-index: 32;
+  color: rgb(224 242 255 / 0.28);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.38rem;
+  letter-spacing: 0.09em;
+  pointer-events: none;
+}
+
+@media (max-width: 900px) {
+  .dimension-selector {
+    top: 82px;
+    right: 18px;
+    width: min(440px, calc(100vw - 36px));
+  }
+
+  .dimension-view-controls {
+    right: 18px;
+    top: 150px;
+  }
+
+  .dimension-interaction-hint {
+    display: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .dimension-selector {
+    top: calc(62px + env(safe-area-inset-top, 0px));
+    right: calc(7px + env(safe-area-inset-right, 0px));
+    left: calc(7px + env(safe-area-inset-left, 0px));
+    grid-template-columns: 72px 1fr 58px;
+    width: auto;
+    padding: 7px 8px;
+    border-radius: 12px;
+    background: rgb(2 8 16 / 0.94);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .dimension-selector > div {
+    min-width: 0;
+  }
+
+  .dimension-selector span {
+    font-size: 0.29rem;
+  }
+
+  .dimension-selector strong {
+    font-size: 0.68rem;
+  }
+
+  .dimension-number-input {
+    min-height: 32px;
+    font-size: 0.46rem;
+  }
+
+  .dimension-view-controls {
+    top: auto;
+    right: calc(7px + env(safe-area-inset-right, 0px));
+    bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    left: calc(7px + env(safe-area-inset-left, 0px));
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    padding: 4px;
+    border-radius: 12px;
+    background: rgb(2 8 16 / 0.95);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .dimension-view-controls button,
+  .dimension-view-controls span {
+    min-height: 34px;
+  }
+
+  .dimension-view-controls button {
+    font-size: 0.62rem;
+  }
+
+  .dimension-view-controls span {
+    font-size: 0.31rem;
+  }
+
+  .dimension-view-controls .dimension-view-reset {
+    grid-column: auto;
+    font-size: 0.27rem;
+  }
+
+  .dimension-controls {
+    padding-bottom: 58px;
+  }
+
+  .dimension-plane-grid {
+    gap: 6px;
+  }
+
+  .dimension-plane-grid input {
+    min-height: 32px;
+  }
+
+  .dimension-sampling-badge {
+    font-size: 0.32rem;
+  }
+
+  .dimension-caption {
+    max-width: 74vw;
+  }
+}
+
+@media (max-width: 380px) {
+  .dimension-selector {
+    grid-template-columns: 64px 1fr 52px;
+  }
+
+  .dimension-view-controls {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .dimension-view-controls .dimension-view-reset {
+    grid-column: span 1;
+  }
+}
+
+@media (max-height: 600px) and (orientation: landscape) {
+  .dimension-selector {
+    top: calc(8px + env(safe-area-inset-top, 0px));
+    right: calc(8px + env(safe-area-inset-right, 0px));
+    left: auto;
+    width: min(420px, 48vw);
+  }
+
+  .dimension-view-controls {
+    top: auto;
+    right: calc(8px + env(safe-area-inset-right, 0px));
+    bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    left: auto;
+    width: min(430px, 49vw);
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+  }
+
+  .dimension-caption {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dimension-lab-viewport {
+    cursor: default;
+  }
+}
