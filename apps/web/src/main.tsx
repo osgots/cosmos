@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
 import "./index.css";
+import "./responsiveHardening.css";
 import "./features/scales/realityVisualGrade.css";
 import "./features/dimensions/DimensionsLabResponsive.css";
 
