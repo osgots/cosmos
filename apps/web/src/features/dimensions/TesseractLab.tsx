@@ -189,43 +189,37 @@ function combineRotations(
   const xy =
     rotationMatrix4(
       RotationPlane4.XY,
-      manual.XY +
-        automatic.XY
+      manual.XY + automatic.XY
     );
 
   const xz =
     rotationMatrix4(
       RotationPlane4.XZ,
-      manual.XZ +
-        automatic.XZ
+      manual.XZ + automatic.XZ
     );
 
   const xw =
     rotationMatrix4(
       RotationPlane4.XW,
-      manual.XW +
-        automatic.XW
+      manual.XW + automatic.XW
     );
 
   const yz =
     rotationMatrix4(
       RotationPlane4.YZ,
-      manual.YZ +
-        automatic.YZ
+      manual.YZ + automatic.YZ
     );
 
   const yw =
     rotationMatrix4(
       RotationPlane4.YW,
-      manual.YW +
-        automatic.YW
+      manual.YW + automatic.YW
     );
 
   const zw =
     rotationMatrix4(
       RotationPlane4.ZW,
-      manual.ZW +
-        automatic.ZW
+      manual.ZW + automatic.ZW
     );
 
   return multiplyMatrix4(
@@ -258,11 +252,9 @@ function transformRenderMesh(
       mesh.vertices.map(
         vertex => ({
           x:
-            vertex.x * zoom +
-            panX,
+            vertex.x * zoom + panX,
           y:
-            vertex.y * zoom +
-            panY,
+            vertex.y * zoom + panY,
           z:
             vertex.z * zoom
         })
@@ -292,8 +284,7 @@ function objectName(
 function formatBigInt(
   value: bigint
 ): string {
-  const text =
-    value.toString();
+  const text = value.toString();
 
   if (text.length <= 9) {
     return Number(value)
@@ -342,129 +333,80 @@ function TesseractLab() {
       null
     );
 
-  const [
-    status,
-    setStatus
-  ] =
+  const [status, setStatus] =
     useState<ViewportStatus>(
       "INITIALIZING"
     );
 
-  const [
-    dimension,
-    setDimension
-  ] =
+  const [dimension, setDimension] =
     useState(4);
-
   const dimensionRef =
     useRef(4);
 
-  const [
-    manualAngles,
-    setManualAngles
-  ] =
+  const [manualAngles, setManualAngles] =
     useState<RotationAngles>({
       ...ZERO_ROTATION
     });
-
   const manualAnglesRef =
     useRef<RotationAngles>({
       ...ZERO_ROTATION
     });
-
   const automaticAnglesRef =
     useRef<RotationAngles>({
       ...ZERO_ROTATION
     });
 
-  const [
-    autoRotation,
-    setAutoRotation
-  ] =
+  const [autoRotation, setAutoRotation] =
     useState(true);
-
   const autoRotationRef =
     useRef(true);
 
-  const [
-    projectionDistance,
-    setProjectionDistance
-  ] =
+  const [projectionDistance, setProjectionDistance] =
     useState(4.5);
-
   const projectionDistanceRef =
     useRef(4.5);
 
-  const [
-    viewMode,
-    setViewMode
-  ] =
+  const [viewMode, setViewMode] =
     useState<ViewMode>(
       "PERSPECTIVE"
     );
-
   const viewModeRef =
     useRef<ViewMode>(
       "PERSPECTIVE"
     );
 
-  const [
-    sliceW,
-    setSliceW
-  ] =
+  const [sliceW, setSliceW] =
     useState(0);
-
   const sliceWRef =
     useRef(0);
 
-  const [
-    ndAxisA,
-    setNdAxisA
-  ] =
+  const [ndAxisA, setNdAxisA] =
     useState(0);
-
   const ndAxisARef =
     useRef(0);
 
-  const [
-    ndAxisB,
-    setNdAxisB
-  ] =
+  const [ndAxisB, setNdAxisB] =
     useState(1);
-
   const ndAxisBRef =
     useRef(1);
 
-  const [
-    ndManualAngle,
-    setNdManualAngle
-  ] =
+  const [ndManualAngle, setNdManualAngle] =
     useState(0);
-
   const ndManualAngleRef =
     useRef(0);
-
   const ndAutoAngleRef =
     useRef(0);
 
-  const [
-    viewZoom,
-    setViewZoom
-  ] =
+  const [viewZoom, setViewZoom] =
     useState(1);
-
   const viewZoomRef =
     useRef(1);
 
-  const [
-    viewPan,
-    setViewPan
-  ] =
+  const [, setViewPan] =
     useState({
       x: 0,
       y: 0
     });
-
   const viewPanRef =
     useRef({
       x: 0,
@@ -474,10 +416,7 @@ function TesseractLab() {
   const initialCounts =
     theoreticalCounts(4);
 
-  const [
-    renderStats,
-    setRenderStats
-  ] =
+  const [renderStats, setRenderStats] =
     useState<RenderStats>({
       vertices: 16,
       edges: 32,
@@ -487,7 +426,6 @@ function TesseractLab() {
       theoreticalEdges:
         initialCounts.edges
     });
-
   const renderStatsRef =
     useRef<RenderStats>({
       vertices: 16,
@@ -637,8 +575,7 @@ function TesseractLab() {
       return;
     }
 
-    projectionDistanceRef.current =
-      value;
+    projectionDistanceRef.current = value;
     setProjectionDistance(value);
   }
 
@@ -725,7 +662,6 @@ function TesseractLab() {
     const zeroManual = {
       ...ZERO_ROTATION
     };
-
     const zeroAutomatic = {
       ...ZERO_ROTATION
     };
@@ -775,10 +711,8 @@ function TesseractLab() {
       const canvasElement:
         HTMLCanvasElement =
           currentCanvas;
-
       const backend =
         new ThreeWebGPUBackend();
-
       const pointers =
         new Map<number, PointerPoint>();
 
@@ -795,7 +729,6 @@ function TesseractLab() {
         event: WheelEvent
       ): void => {
         event.preventDefault();
-
         zoomBy(
           Math.exp(
             -event.deltaY *
@@ -1009,7 +942,6 @@ function TesseractLab() {
             new ResizeObserver(
               resize
             );
-
           resizeObserver.observe(
             canvasElement
           );
@@ -1027,8 +959,7 @@ function TesseractLab() {
             const deltaSeconds =
               Math.min(
                 (
-                  now -
-                  previousFrameTime
+                  now - previousFrameTime
                 ) /
                   1000,
                 0.1
@@ -1075,8 +1006,7 @@ function TesseractLab() {
                 dimensionRef.current >= 2
               ) {
                 ndAutoAngleRef.current +=
-                  0.29 *
-                  deltaSeconds;
+                  0.29 * deltaSeconds;
               }
             }
 
