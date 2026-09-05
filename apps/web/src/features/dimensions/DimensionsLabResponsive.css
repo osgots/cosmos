@@ -1,0 +1,326 @@
+.dimension-lab-shell {
+  --dimension-panel-bg: rgb(2 8 16 / 0.94);
+  --dimension-panel-border: rgb(148 223 255 / 0.16);
+  --dimension-panel-shadow: 0 18px 50px rgb(0 0 0 / 0.32);
+}
+
+.dimension-lab-shell .cosmos-hud {
+  z-index: 28;
+}
+
+.dimension-lab-shell .cosmos-brand,
+.dimension-lab-shell .cosmos-subtitle,
+.dimension-lab-shell .cosmos-status {
+  text-shadow: 0 1px 18px rgb(0 0 0 / 0.7);
+}
+
+.dimension-selector,
+.dimension-readout,
+.dimension-view-controls,
+.dimension-controls,
+.dimension-lab-shell .cosmos-w-legend {
+  border-color: var(--dimension-panel-border);
+  background: var(--dimension-panel-bg);
+  box-shadow: var(--dimension-panel-shadow);
+}
+
+.dimension-selector {
+  top: 24px;
+  right: 24px;
+  width: min(510px, calc(100vw - 48px));
+}
+
+.dimension-readout {
+  top: 104px;
+  right: 24px;
+  z-index: 32;
+  width: 300px;
+  padding: 16px 18px;
+}
+
+.dimension-readout > div {
+  padding: 6px 0;
+}
+
+.dimension-readout span {
+  color: rgb(220 239 250 / 0.58);
+  opacity: 1;
+}
+
+.dimension-readout strong {
+  color: rgb(245 251 255 / 0.92);
+}
+
+.dimension-view-controls {
+  top: 390px;
+  right: 24px;
+  z-index: 35;
+  background: rgb(2 8 16 / 0.97);
+}
+
+.dimension-view-controls button,
+.dimension-view-controls span {
+  border-color: rgb(255 255 255 / 0.11);
+}
+
+.dimension-controls {
+  border-color: rgb(148 223 255 / 0.15);
+  background: rgb(2 8 16 / 0.96);
+}
+
+.dimension-controls .cosmos-panel-kicker,
+.dimension-controls .cosmos-slider-heading span,
+.dimension-controls .cosmos-slider-heading output,
+.dimension-controls .dimension-plane-grid span,
+.dimension-controls .cosmos-control-note,
+.dimension-controls .cosmos-view-description {
+  opacity: 0.72;
+}
+
+.dimension-controls h2 {
+  color: rgb(247 252 255 / 0.96);
+}
+
+.dimension-lab-viewport {
+  filter: contrast(1.07) brightness(1.05);
+}
+
+@media (max-width: 1100px) and (min-width: 721px) {
+  .dimension-selector {
+    top: 86px;
+    right: 18px;
+    width: min(460px, calc(100vw - 36px));
+  }
+
+  .dimension-readout {
+    top: 158px;
+    right: 18px;
+  }
+
+  .dimension-view-controls {
+    top: auto;
+    right: 18px;
+    bottom: 24px;
+  }
+}
+
+@media (max-width: 900px) {
+  .dimension-readout {
+    display: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .dimension-lab-shell {
+    min-height: 100dvh;
+  }
+
+  .dimension-lab-shell .cosmos-hud {
+    top: calc(18px + env(safe-area-inset-top, 0px));
+    left: calc(18px + env(safe-area-inset-left, 0px));
+  }
+
+  .dimension-lab-shell .cosmos-brand {
+    font-size: 1.32rem;
+    letter-spacing: 0.16em;
+  }
+
+  .dimension-lab-shell .cosmos-subtitle {
+    margin-top: 8px;
+    font-size: 0.48rem;
+    letter-spacing: 0.18em;
+    opacity: 0.72;
+  }
+
+  .dimension-lab-shell .cosmos-status {
+    margin-top: 10px;
+    padding: 5px 8px;
+    font-size: 0.5rem;
+    background: rgb(0 0 0 / 0.64);
+  }
+
+  .dimension-selector {
+    top: calc(94px + env(safe-area-inset-top, 0px));
+    right: calc(10px + env(safe-area-inset-right, 0px));
+    left: calc(10px + env(safe-area-inset-left, 0px));
+    grid-template-columns: 76px minmax(0, 1fr) 62px;
+    gap: 8px;
+    width: auto;
+    min-height: 70px;
+    padding: 9px 10px;
+    border-radius: 15px;
+    background: rgb(2 8 16 / 0.98);
+  }
+
+  .dimension-selector strong {
+    font-size: 0.82rem;
+  }
+
+  .dimension-selector span {
+    font-size: 0.34rem;
+    color: rgb(216 239 252 / 0.62);
+  }
+
+  .dimension-selector input[type="range"] {
+    min-width: 0;
+  }
+
+  .dimension-number-input {
+    min-height: 38px;
+    border-color: rgb(255 255 255 / 0.14);
+    background: rgb(255 255 255 / 0.05);
+    font-size: 0.58rem;
+  }
+
+  .dimension-lab-viewport {
+    inset: 0;
+    filter: contrast(1.1) brightness(1.08);
+  }
+
+  .dimension-controls {
+    left: calc(10px + env(safe-area-inset-left, 0px));
+    right: calc(10px + env(safe-area-inset-right, 0px));
+    bottom: calc(70px + env(safe-area-inset-bottom, 0px));
+    width: auto;
+    max-height: min(43dvh, 390px);
+    padding: 16px;
+    border-radius: 18px;
+    background: rgb(2 8 16 / 0.985);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .dimension-controls .cosmos-controls-header {
+    margin-bottom: 14px;
+  }
+
+  .dimension-controls h2 {
+    font-size: 0.9rem;
+  }
+
+  .dimension-controls .cosmos-panel-kicker {
+    font-size: 0.47rem;
+    opacity: 0.72;
+  }
+
+  .dimension-controls .cosmos-slider-heading {
+    font-size: 0.62rem;
+  }
+
+  .dimension-controls .cosmos-slider-heading span,
+  .dimension-controls .cosmos-slider-heading output,
+  .dimension-controls .dimension-plane-grid span,
+  .dimension-controls .cosmos-control-note,
+  .dimension-controls .cosmos-view-description {
+    opacity: 0.78;
+  }
+
+  .dimension-controls .cosmos-control-note,
+  .dimension-controls .cosmos-view-description,
+  .dimension-controls .dimension-sampling-badge {
+    font-size: 0.45rem;
+    line-height: 1.55;
+  }
+
+  .dimension-view-controls {
+    top: auto;
+    right: calc(10px + env(safe-area-inset-right, 0px));
+    bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    left: calc(10px + env(safe-area-inset-left, 0px));
+    z-index: 42;
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    gap: 4px;
+    width: auto;
+    padding: 5px;
+    border-radius: 14px;
+    background: rgb(2 8 16 / 0.99);
+  }
+
+  .dimension-view-controls button,
+  .dimension-view-controls span {
+    min-height: 42px;
+  }
+
+  .dimension-view-controls button {
+    font-size: 0.72rem;
+  }
+
+  .dimension-view-controls span {
+    font-size: 0.34rem;
+  }
+
+  .dimension-view-controls .dimension-view-reset {
+    font-size: 0.3rem;
+  }
+
+  .dimension-lab-shell .cosmos-w-legend {
+    display: none;
+  }
+}
+
+@media (max-width: 430px) {
+  .dimension-selector {
+    grid-template-columns: 70px minmax(0, 1fr) 58px;
+  }
+
+  .dimension-controls {
+    max-height: min(41dvh, 360px);
+  }
+}
+
+@media (max-width: 380px) {
+  .dimension-selector {
+    top: calc(90px + env(safe-area-inset-top, 0px));
+    grid-template-columns: 64px minmax(0, 1fr) 54px;
+    padding: 8px;
+  }
+
+  .dimension-controls {
+    left: calc(7px + env(safe-area-inset-left, 0px));
+    right: calc(7px + env(safe-area-inset-right, 0px));
+    bottom: calc(68px + env(safe-area-inset-bottom, 0px));
+    max-height: 40dvh;
+    padding: 14px;
+  }
+
+  .dimension-view-controls {
+    right: calc(7px + env(safe-area-inset-right, 0px));
+    left: calc(7px + env(safe-area-inset-left, 0px));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .dimension-view-controls button,
+  .dimension-view-controls span {
+    min-height: 38px;
+  }
+}
+
+@media (max-height: 600px) and (orientation: landscape) {
+  .dimension-lab-shell .cosmos-hud {
+    top: calc(10px + env(safe-area-inset-top, 0px));
+    left: calc(12px + env(safe-area-inset-left, 0px));
+  }
+
+  .dimension-selector {
+    top: calc(10px + env(safe-area-inset-top, 0px));
+    right: calc(10px + env(safe-area-inset-right, 0px));
+    left: auto;
+    width: min(430px, 52vw);
+  }
+
+  .dimension-controls {
+    left: calc(10px + env(safe-area-inset-left, 0px));
+    right: auto;
+    bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    width: min(360px, 42vw);
+    max-height: calc(100dvh - 112px);
+  }
+
+  .dimension-view-controls {
+    right: calc(10px + env(safe-area-inset-right, 0px));
+    bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    left: auto;
+    width: min(430px, 52vw);
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+  }
+}
