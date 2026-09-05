@@ -1,4 +1,4 @@
-﻿html,
+html,
 body,
 #root {
   width: 100%;
@@ -41,4 +41,87 @@ button,
 input,
 canvas {
   font: inherit;
+}
+
+.vsmos-signature {
+  position: fixed;
+  left: 18px;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  z-index: 200;
+
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  max-width: min(280px, calc(100vw - 36px));
+  padding: 9px 11px;
+
+  border: 1px solid rgb(143 225 255 / 0.12);
+  border-radius: 10px;
+
+  background: rgb(2 8 16 / 0.64);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  color: rgb(232 248 255 / 0.74);
+
+  pointer-events: none;
+  user-select: none;
+}
+
+.vsmos-signature strong,
+.vsmos-signature span,
+.vsmos-signature small {
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+}
+
+.vsmos-signature strong {
+  font-size: 0.64rem;
+  letter-spacing: 0.2em;
+  color: rgb(232 248 255 / 0.96);
+}
+
+.vsmos-signature span {
+  font-size: 0.45rem;
+  letter-spacing: 0.12em;
+  color: rgb(143 225 255 / 0.7);
+}
+
+.vsmos-signature small {
+  font-size: 0.4rem;
+  letter-spacing: 0.11em;
+  opacity: 0.52;
+}
+
+body.cosmos-lab-active
+  .vsmos-signature {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .vsmos-signature {
+    left: 9px;
+    bottom: calc(9px + env(safe-area-inset-bottom, 0px));
+
+    max-width: calc(100vw - 18px);
+    padding: 7px 9px;
+
+    border-radius: 8px;
+  }
+
+  .vsmos-signature strong {
+    font-size: 0.56rem;
+  }
+
+  .vsmos-signature span {
+    font-size: 0.38rem;
+  }
+
+  .vsmos-signature small {
+    font-size: 0.34rem;
+  }
 }
