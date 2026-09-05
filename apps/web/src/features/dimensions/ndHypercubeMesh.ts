@@ -329,17 +329,19 @@ function sampledHypercube(
     const axis =
       sample % dimension;
 
-    const first =
-      Array.from(
-        { length: dimension },
-        () =>
-          random() > 0.5
-            ? 1
-            : -1
-      );
+    const first:
+      number[] =
+        Array.from(
+          { length: dimension },
+          () =>
+            random() > 0.5
+              ? 1
+              : -1
+        );
 
-    const second =
-      [...first];
+    const second:
+      number[] =
+        [...first];
 
     second[axis] =
       -second[axis]!;
