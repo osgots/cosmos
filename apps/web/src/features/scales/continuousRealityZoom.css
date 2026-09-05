@@ -1,0 +1,107 @@
+.cosmos-reality-zoom-hud {
+  position: fixed;
+  top: 86px;
+  left: 50%;
+  z-index: 70;
+  width: min(360px, calc(100vw - 32px));
+  padding: 9px 12px 10px;
+  transform: translateX(-50%) translateY(-8px);
+  border: 1px solid rgb(255 255 255 / 0.08);
+  border-radius: 14px;
+  background: rgb(2 8 16 / 0.72);
+  color: #eef8ff;
+  opacity: 0;
+  pointer-events: none;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: opacity 180ms ease, transform 180ms ease;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+.cosmos-reality-zoom-hud[data-visible="true"] {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.cosmos-reality-zoom-title {
+  color: rgb(137 224 255 / 0.58);
+  font-size: 0.42rem;
+  letter-spacing: 0.14em;
+}
+
+.cosmos-reality-zoom-label {
+  margin-top: 4px;
+  overflow: hidden;
+  color: rgb(235 248 255 / 0.82);
+  font-size: 0.48rem;
+  letter-spacing: 0.08em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cosmos-reality-zoom-track {
+  position: relative;
+  height: 3px;
+  margin-top: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.08);
+}
+
+.cosmos-reality-zoom-fill {
+  position: absolute;
+  inset: 0;
+  transform: scaleX(0);
+  transform-origin: left center;
+  background: linear-gradient(
+    90deg,
+    rgb(101 215 255 / 0.86),
+    rgb(255 196 120 / 0.74)
+  );
+  transition: transform 240ms ease;
+}
+
+.cosmos-reality-zoom-hint {
+  margin-top: 7px;
+  color: rgb(226 242 250 / 0.32);
+  font-size: 0.35rem;
+  letter-spacing: 0.08em;
+}
+
+@media (max-width: 720px) {
+  .cosmos-reality-zoom-hud {
+    top: calc(58px + env(safe-area-inset-top, 0px));
+    width: min(280px, calc(100vw - 90px));
+    padding: 7px 9px 8px;
+    border-radius: 11px;
+    background: rgb(2 8 16 / 0.86);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .cosmos-reality-zoom-title {
+    font-size: 0.31rem;
+  }
+
+  .cosmos-reality-zoom-label {
+    font-size: 0.36rem;
+  }
+
+  .cosmos-reality-zoom-hint {
+    font-size: 0.27rem;
+  }
+}
+
+@media (max-height: 600px) and (orientation: landscape) {
+  .cosmos-reality-zoom-hud {
+    top: calc(8px + env(safe-area-inset-top, 0px));
+    width: min(280px, 36vw);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cosmos-reality-zoom-hud,
+  .cosmos-reality-zoom-fill {
+    transition: none;
+  }
+}
