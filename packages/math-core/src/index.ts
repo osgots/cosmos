@@ -87,3 +87,16 @@ export {
 export type {
   RotationPlane4 as RotationPlane4Type
 } from "./matrix/rotation";
+
+export type {
+  ProjectionBasis3ND,
+  HypercubeCombinatorics
+} from "./nd";
+
+export {
+  validateDimension,
+  hypercubeCombinatorics,
+  rotateVectorNDInPlane,
+  createProjectionBasis3ND,
+  projectVectorNDTo3D
+} from "./nd";
