@@ -41,6 +41,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Typecheck math core
+        run: pnpm --filter @cosmos/math-core typecheck
+
+      - name: Test math core
+        run: pnpm --filter @cosmos/math-core test
+
       - name: Typecheck astronomy
         run: pnpm --filter @cosmos/astronomy typecheck
 
