@@ -1,0 +1,105 @@
+/*
+ * COSMOS∞ visual grading layer.
+ *
+ * This stylesheet never changes simulation or astronomy values. It only
+ * improves display contrast, perceived depth and black-level separation.
+ */
+
+.ue-shell,
+.cse-shell {
+  isolation: isolate;
+  background: #000;
+}
+
+.ue-canvas,
+.cse-canvas {
+  filter:
+    contrast(1.09)
+    saturate(1.07)
+    brightness(0.99);
+}
+
+.ue-shell::before,
+.cse-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      ellipse at 50% 46%,
+      transparent 32%,
+      rgb(0 0 0 / 0.10) 62%,
+      rgb(0 0 0 / 0.42) 100%
+    ),
+    radial-gradient(
+      circle at 52% 42%,
+      rgb(88 168 255 / 0.025),
+      transparent 48%
+    );
+  mix-blend-mode: normal;
+}
+
+.ue-shell::after,
+.cse-shell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  opacity: 0.12;
+  background-image:
+    repeating-radial-gradient(
+      circle at 17% 23%,
+      rgb(255 255 255 / 0.055) 0,
+      rgb(255 255 255 / 0.055) 0.45px,
+      transparent 0.65px,
+      transparent 4px
+    );
+  background-size: 29px 31px;
+  mix-blend-mode: soft-light;
+}
+
+.ue-header,
+.ue-info,
+.ue-controls,
+.ue-camera-controls,
+.cse-header,
+.cse-info,
+.cse-camera,
+.cse-deep-dive,
+.cse-interaction-note {
+  z-index: 12;
+}
+
+.ue-info,
+.ue-controls,
+.cse-info,
+.cse-deep-dive {
+  box-shadow:
+    0 22px 70px rgb(0 0 0 / 0.32),
+    inset 0 1px 0 rgb(255 255 255 / 0.025);
+}
+
+@media (max-width: 720px) {
+  .ue-canvas,
+  .cse-canvas {
+    filter:
+      contrast(1.075)
+      saturate(1.045)
+      brightness(0.99);
+  }
+
+  .ue-shell::after,
+  .cse-shell::after {
+    opacity: 0.065;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .ue-shell::after,
+  .cse-shell::after {
+    display: none;
+  }
+}
