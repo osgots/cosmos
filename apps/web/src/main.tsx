@@ -3,14 +3,15 @@ import { createRoot } from "react-dom/client";
 
 import "./index.css";
 import "./features/scales/realityVisualGrade.css";
+import "./features/dimensions/DimensionsLabResponsive.css";
 
 import App from "./App.tsx";
 
 import {
-  installContinuousRealityZoom
-} from "./features/scales/installContinuousRealityZoom";
+  installSeamlessRealityZoom
+} from "./features/scales/installSeamlessRealityZoom";
 
-installContinuousRealityZoom();
+installSeamlessRealityZoom();
 
 createRoot(
   document.getElementById("root")!
