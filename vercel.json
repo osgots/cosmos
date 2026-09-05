@@ -1,8 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "installCommand": "pnpm install --frozen-lockfile",
-  "buildCommand": "pnpm --filter @cosmos/web build",
-  "outputDirectory": "apps/web/dist",
+  "buildCommand": "pnpm --filter @cosmos/web build && node tooling/prepare-vercel-output.mjs",
+  "outputDirectory": "dist",
   "framework": "vite",
   "cleanUrls": true
 }
