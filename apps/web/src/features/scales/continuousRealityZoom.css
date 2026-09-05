@@ -91,9 +91,9 @@
 }
 
 /*
- * The whole scientific environment participates in the zoom gesture.
- * The origin follows the user's cursor / pinch midpoint, so the motion
- * feels camera-driven instead of like a page transition.
+ * The entire scientific environment participates in the gesture. The
+ * transform origin follows the pointer / pinch midpoint, which makes the
+ * movement read as camera motion rather than page navigation.
  */
 .cosmos-scale-experience[data-reality-zooming="true"] {
   transform:
@@ -106,21 +106,7 @@
   transform-origin:
     var(--reality-origin-x, 50%)
     var(--reality-origin-y, 50%);
-  filter:
-    saturate(
-      calc(
-        1 +
-        var(--reality-depth, 0) *
-        0.08
-      )
-    )
-    contrast(
-      calc(
-        1 +
-        var(--reality-depth, 0) *
-        0.04
-      )
-    );
+  filter: saturate(1.04) contrast(1.02);
   will-change: transform, filter;
   transition:
     transform 42ms linear,
